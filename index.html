@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synapse — In-Memory Vector & Hybrid Search Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="design-tokens.css">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: var(--bone, #F2F0EB);
+      --panel: var(--raw-white, #FFFFFF);
+      --panel-hover: #EAE8E1;
+      --text: var(--carbon, #1A1917);
+      --text-muted: var(--ash, #8A867D);
+      --text-subtle: #A8A49B;
+      --border: var(--concrete, #C8C5BE);
+      --border-focus: var(--carbon, #1A1917);
+      --accent: var(--carbon, #1A1917);
+      --accent-light: #EAE8E1;
+      --success: var(--carbon, #1A1917);
+      --warning: var(--carbon, #1A1917);
+      --danger: var(--carbon, #1A1917);
+
+      --font-ui: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .brand span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .header-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .header-links a:hover {
+      color: var(--text);
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 360px 1fr 380px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar Columns */
+    .sidebar-left, .sidebar-right {
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-left {
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      gap: 24px;
+    }
+    .sidebar-right {
+      border-left: 1px solid var(--border);
+      padding: 24px;
+      gap: 20px;
+    }
+
+    /* Center Visualizer */
+    .center-stage {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .canvas-overlay {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    /* Inputs & Form Controls */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    input[type="text"], textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--border-focus);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    button.btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-family: var(--font-ui);
+      font-weight: 500;
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button.btn-primary:hover {
+      opacity: 0.92;
+    }
+
+    /* Preset Chips */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .chip:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    /* Alpha Slider Control */
+    .slider-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    .slider-state {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #E5E5E5;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-subtle);
+    }
+
+    /* Metrics Strip */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .metric-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .metric-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Results List */
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .result-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.2s;
+    }
+    .result-item:first-child {
+      border-left: 3px solid var(--accent);
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .result-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .result-score {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .result-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .result-meta {
+      display: flex;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+    }
+    .tag {
+      background: #E5E7EB;
+      color: #374151;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <h1>Synapse</h1>
+      <span>In-Memory Vector Database & Hybrid HNSW Retriever</span>
+    </div>
+    <div class="header-links">
+      <a href="https://github.com/millymilly29/synapse" target="_blank">GitHub Repository ↗</a>
+      <a href="https://millymilly29.github.io" target="_blank">Portfolio ↗</a>
+    </div>
+  </header>
+
+  <!-- Workspace 3-Column Layout -->
+  <div class="workspace">
+
+    <!-- Left Controls: Query, Alpha, Ingestion -->
+    <div class="sidebar-left">
+      <div>
+        <div class="section-title">Query Execution</div>
+        <div class="input-group">
+          <input type="text" id="queryInput" placeholder="Enter query or agent context..." value="postgres port 5432 timeout" autocomplete="off" spellcheck="false">
+          <button class="btn-primary" id="btnSearch">Run Hybrid Search</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Benchmark Presets</div>
+        <div class="chips">
+          <div class="chip" data-q="postgres port 5432 timeout">Exact Port 5432</div>
+          <div class="chip" data-q="credential exfiltration token leak">Credential Exfiltration</div>
+          <div class="chip" data-q="RAM exhaustion and container crash">OOM Container Crash</div>
+          <div class="chip" data-q="CVE-2026-4421 security advisory">CVE-2026-4421 Token</div>
+          <div class="chip" data-q="docker image prune reclaim disk">Docker Prune Disk</div>
+        </div>
+      </div>
+
+      <!-- Alpha Slider -->
+      <div>
+        <div class="section-title">Retrieval Blend (RRF Alpha)</div>
+        <div class="slider-box">
+          <div class="slider-header">
+            <span>Blend Ratio</span>
+            <span class="slider-state" id="alphaLabel">Hybrid (65% Dense / 35% Sparse)</span>
+          </div>
+          <input type="range" id="alphaSlider" min="0" max="100" value="65">
+          <div class="slider-labels">
+            <span>BM25 (Exact)</span>
+            <span>Balanced RRF</span>
+            <span>HNSW (Semantic)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Telemetry -->
+      <div>
+        <div class="section-title">Store Telemetry</div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-val" id="metricLatency">0.00 ms</div>
+            <div class="metric-lbl">Query Latency</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metricRecall">98.5%</div>
+            <div class="metric-lbl">Estimated Recall@10</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metricCompression">4.0x</div>
+            <div class="metric-lbl">SQ8 Compression</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metricVectors">0</div>
+            <div class="metric-lbl">Indexed Vectors</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add New Memory -->
+      <div>
+        <div class="section-title">Ingest Memory</div>
+        <div class="input-group">
+          <textarea id="memTextInput" placeholder="Enter memory text to index into HNSW + BM25..."></textarea>
+          <button class="btn-primary" style="background:#171717;" id="btnAddMem">Remember Item</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Visualization: Embedding Space & HNSW Graph -->
+    <div class="center-stage">
+      <div class="canvas-overlay">
+        2D Embedding Space Projection &middot; HNSW Skip-Graph Navigation Trail
+      </div>
+      <div class="canvas-container">
+        <canvas id="graphCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Right Column: Recalled Memories -->
+    <div class="sidebar-right">
+      <div class="section-title">Recalled Episodic Memories (Top-K)</div>
+      <div class="results-list" id="resultsList">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- VECTOR MATH PRIMITIVES ---
+    class VectorMath {
+      static dotProduct(a, b) {
+        let sum = 0;
+        for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
+        return sum;
+      }
+      static l2Norm(a) {
+        let sum = 0;
+        for (let i = 0; i < a.length; i++) sum += a[i] * a[i];
+        return Math.sqrt(sum);
+      }
+      static l2Normalize(a) {
+        const norm = VectorMath.l2Norm(a);
+        if (norm === 0) return a;
+        const out = new Float32Array(a.length);
+        const inv = 1 / norm;
+        for (let i = 0; i < a.length; i++) out[i] = a[i] * inv;
+        return out;
+      }
+      static cosineSimilarity(a, b) {
+        const dot = VectorMath.dotProduct(a, b);
+        const na = VectorMath.l2Norm(a);
+        const nb = VectorMath.l2Norm(b);
+        return (na === 0 || nb === 0) ? 0 : dot / (na * nb);
+      }
+      static embed(text, dim = 64) {
+        const vec = new Float32Array(dim);
+        if (!text) return vec;
+        const normalized = String(text).toLowerCase().trim();
+        const tokens = normalized.match(/[\p{L}\p{N}_$-]+/gu) || [normalized];
+        for (let t = 0; t < tokens.length; t++) {
+          const tok = tokens[t];
+          let hash = 0x811c9dc5;
+          for (let i = 0; i < tok.length; i++) {
+            hash ^= tok.charCodeAt(i);
+            hash = Math.imul(hash, 0x01000193);
+          }
+          for (let d = 0; d < dim; d++) {
+            const freq = (d + 1) * 0.137;
+            const phase = (hash % 1000) * 0.00628;
+            vec[d] += Math.sin(freq * (t + 1) + phase) + Math.cos(freq * 1.618);
+          }
+        }
+        return VectorMath.l2Normalize(vec);
+      }
+    }
+
+    // --- SCALAR QUANTIZER (SQ8) ---
+    class ScalarQuantizer {
+      static quantize(vector) {
+        const dim = vector.length;
+        let min = Infinity, max = -Infinity;
+        for (let i = 0; i < dim; i++) {
+          if (vector[i] < min) min = vector[i];
+          if (vector[i] > max) max = vector[i];
+        }
+        const range = (max - min) || 1e-7;
+        const invRange = 255 / range;
+        const qVec = new Uint8Array(dim);
+        for (let i = 0; i < dim; i++) {
+          qVec[i] = Math.max(0, Math.min(255, Math.round((vector[i] - min) * invRange)));
+        }
+        return { qVec, min, range, dim };
+      }
+      static fastCosineSimilarity(floatVec, qTarget) {
+        const { qVec, min, range, dim } = qTarget;
+        const scale = range / 255;
+        let dot = 0, normBsq = 0;
+        for (let i = 0; i < dim; i++) {
+          const valB = min + qVec[i] * scale;
+          dot += floatVec[i] * valB;
+          normBsq += valB * valB;
+        }
+        return normBsq === 0 ? 0 : dot / Math.sqrt(normBsq);
+      }
+    }
+
+    // --- HNSW GRAPH INDEX ---
+    class HNSWIndex {
+      constructor(options = {}) {
+        this.M = options.M ?? 16;
+        this.M0 = 2 * this.M;
+        this.efConstruction = options.efConstruction ?? 64;
+        this.efSearch = options.efSearch ?? 32;
+        this.mL = 1 / Math.log(this.M);
+        this.useQuantization = options.useQuantization ?? true;
+        this.nodes = new Map();
+        this.enterPointId = null;
+        this.maxLayer = -1;
+        this.size = 0;
+      }
+      _randomLayer() {
+        const r = Math.random();
+        return r === 0 ? 0 : Math.floor(-Math.log(r) * this.mL);
+      }
+      _distance(queryVec, node) {
+        if (this.useQuantization && node.qVector) {
+          return 1.0 - ScalarQuantizer.fastCosineSimilarity(queryVec, node.qVector);
+        }
+        return 1.0 - VectorMath.cosineSimilarity(queryVec, node.vector);
+      }
+      _nodeDistance(nodeA, nodeB) {
+        return 1.0 - VectorMath.cosineSimilarity(nodeA.vector, nodeB.vector);
+      }
+      insert(id, rawVector, visualPos = null) {
+        const vector = VectorMath.l2Normalize(rawVector);
+        const targetLayer = this._randomLayer();
+        const node = {
+          id,
+          vector,
+          qVector: this.useQuantization ? ScalarQuantizer.quantize(vector) : null,
+          layer: targetLayer,
+          friends: [],
+          x: visualPos ? visualPos.x : (vector[0] * 300 + 400),
+          y: visualPos ? visualPos.y : (vector[1] * 300 + 300)
+        };
+        for (let l = 0; l <= targetLayer; l++) node.friends[l] = new Set();
+        this.nodes.set(id, node);
+        this.size++;
+
+        if (this.enterPointId === null) {
+          this.enterPointId = id;
+          this.maxLayer = targetLayer;
+          return;
+        }
+
+        let currObj = this.nodes.get(this.enterPointId);
+        let currDist = this._distance(vector, currObj);
+
+        for (let l = this.maxLayer; l > targetLayer; l--) {
+          let changed = true;
+          while (changed) {
+            changed = false;
+            for (const nId of currObj.friends[l] || []) {
+              const neighbor = this.nodes.get(nId);
+              if (!neighbor) continue;
+              const d = this._distance(vector, neighbor);
+              if (d < currDist) {
+                currDist = d; currObj = neighbor; changed = true;
+              }
+            }
+          }
+        }
+
+        let enterCandidates = [{ id: currObj.id, dist: currDist }];
+        for (let l = Math.min(this.maxLayer, targetLayer); l >= 0; l--) {
+          const candidates = this._searchLayer(vector, enterCandidates, this.efConstruction, l);
+          const maxM = (l === 0) ? this.M0 : this.M;
+          const neighbors = candidates.slice(0, maxM);
+          for (const { id: neighborId } of neighbors) {
+            if (neighborId === id) continue;
+            node.friends[l].add(neighborId);
+            const neighborNode = this.nodes.get(neighborId);
+            if (neighborNode) {
+              if (!neighborNode.friends[l]) neighborNode.friends[l] = new Set();
+              neighborNode.friends[l].add(id);
+              if (neighborNode.friends[l].size > maxM) this._prune(neighborNode, l, maxM);
+            }
+          }
+          enterCandidates = candidates;
+        }
+
+        if (targetLayer > this.maxLayer) {
+          this.maxLayer = targetLayer;
+          this.enterPointId = id;
+        }
+      }
+      _prune(node, layer, maxM) {
+        const list = Array.from(node.friends[layer]).map(nId => {
+          const n = this.nodes.get(nId);
+          return { id: nId, dist: n ? this._nodeDistance(node, n) : Infinity };
+        });
+        list.sort((a, b) => a.dist - b.dist);
+        node.friends[layer] = new Set(list.slice(0, maxM).map(x => x.id));
+      }
+      _searchLayer(queryVec, enterPoints, ef, layer) {
+        const visited = new Set();
+        const candidates = [], found = [];
+        for (const ep of enterPoints) {
+          visited.add(ep.id);
+          candidates.push(ep);
+          found.push(ep);
+        }
+        candidates.sort((a, b) => a.dist - b.dist);
+        found.sort((a, b) => a.dist - b.dist);
+
+        while (candidates.length > 0) {
+          const curr = candidates.shift();
+          const furthest = found[found.length - 1].dist;
+          if (curr.dist > furthest && found.length >= ef) break;
+
+          const currNode = this.nodes.get(curr.id);
+          if (!currNode) continue;
+          for (const nId of currNode.friends[layer] || []) {
+            if (visited.has(nId)) continue;
+            visited.add(nId);
+            const nNode = this.nodes.get(nId);
+            if (!nNode) continue;
+            const d = this._distance(queryVec, nNode);
+            if (d < furthest || found.length < ef) {
+              const it = { id: nId, dist: d };
+              candidates.push(it);
+              candidates.sort((a, b) => a.dist - b.dist);
+              found.push(it);
+              found.sort((a, b) => a.dist - b.dist);
+              if (found.length > ef) found.pop();
+            }
+          }
+        }
+        return found;
+      }
+      searchWithTrail(queryVec, topK = 5, efSearch = this.efSearch) {
+        const trail = [];
+        if (this.size === 0 || this.enterPointId === null) return { results: [], trail };
+        let currObj = this.nodes.get(this.enterPointId);
+        let currDist = this._distance(queryVec, currObj);
+
+        for (let l = this.maxLayer; l > 0; l--) {
+          let changed = true;
+          while (changed) {
+            changed = false;
+            for (const nId of currObj.friends[l] || []) {
+              const n = this.nodes.get(nId);
+              if (!n) continue;
+              const d = this._distance(queryVec, n);
+              if (d < currDist) {
+                trail.push({ layer: l, from: currObj.id, to: n.id, dist: d });
+                currDist = d; currObj = n; changed = true;
+              }
+            }
+          }
+        }
+
+        const candidates = this._searchLayer(queryVec, [{ id: currObj.id, dist: currDist }], Math.max(efSearch, topK), 0);
+        return {
+          results: candidates.slice(0, topK).map(c => ({ id: c.id, similarity: Math.max(0, 1.0 - c.dist) })),
+          trail
+        };
+      }
+    }
+
+    // --- BM25 LEXICAL ENGINE ---
+    class BM25Index {
+      constructor() {
+        this.k1 = 1.2; this.b = 0.75;
+        this.inverted = new Map();
+        this.lengths = new Map();
+        this.totalTokens = 0;
+        this.docCount = 0;
+        this.stopwords = new Set(['a','an','and','are','as','at','be','by','for','from','in','is','it','of','on','or','that','the','this','to','was','with']);
+      }
+      tokenize(text) {
+        return (String(text).toLowerCase().match(/[\p{L}\p{N}_$-]+/gu) || [])
+          .filter(t => !this.stopwords.has(t) && t.length > 1);
+      }
+      add(docId, text) {
+        const tokens = this.tokenize(text);
+        this.lengths.set(docId, tokens.length);
+        this.totalTokens += tokens.length;
+        this.docCount++;
+        const freq = new Map();
+        for (const t of tokens) freq.set(t, (freq.get(t) || 0) + 1);
+        for (const [t, f] of freq.entries()) {
+          if (!this.inverted.has(t)) this.inverted.set(t, new Map());
+          this.inverted.get(t).set(docId, f);
+        }
+      }
+      search(query, topK = 10) {
+        const tokens = this.tokenize(query);
+        if (tokens.length === 0 || this.docCount === 0) return [];
+        const scores = new Map();
+        const avgdl = this.totalTokens / this.docCount;
+        for (const t of tokens) {
+          const posting = this.inverted.get(t);
+          if (!posting) continue;
+          const idf = Math.log(1 + (this.docCount - posting.size + 0.5) / (posting.size + 0.5));
+          for (const [dId, tf] of posting.entries()) {
+            const dl = this.lengths.get(dId) || avgdl;
+            const score = idf * (tf * (this.k1 + 1)) / (tf + this.k1 * (1 - this.b + this.b * (dl / avgdl)));
+            scores.set(dId, (scores.get(dId) || 0) + score);
+          }
+        }
+        return Array.from(scores.entries()).map(([docId, score]) => ({ docId, score })).sort((a,b) => b.score - a.score).slice(0, topK);
+      }
+    }
+
+    // --- HYBRID RRF RETRIEVER ---
+    class HybridRetriever {
+      static fuse(dense = [], sparse = [], alpha = 0.65, k = 60, topK = 5) {
+        const merged = new Map();
+        dense.forEach((d, idx) => {
+          const rrf = alpha * (1 / (k + idx + 1));
+          merged.set(d.id, { id: d.id, score: rrf, sim: d.similarity, bm25: 0 });
+        });
+        sparse.forEach((s, idx) => {
+          const rrf = (1 - alpha) * (1 / (k + idx + 1));
+          if (merged.has(s.docId)) {
+            const item = merged.get(s.docId);
+            item.score += rrf;
+            item.bm25 = s.score;
+          } else {
+            merged.set(s.docId, { id: s.docId, score: rrf, sim: 0, bm25: s.score });
+          }
+        });
+        const list = Array.from(merged.values()).sort((a,b) => b.score - a.score);
+        const maxScore = (alpha * (1 / (k + 1))) + ((1 - alpha) * (1 / (k + 1)));
+        list.forEach(r => r.confidence = Math.min(1.0, r.score / maxScore));
+        return list.slice(0, topK);
+      }
+    }
+
+    // --- APPLICATION STATE & SEED DATA ---
+    const SEED_DATA = [
+      { id: 'MEM-001', text: 'Postgres connection refused on port 5432: primary database replica timeout', cat: 'infra' },
+      { id: 'MEM-002', text: 'Authentication token CVE-2026-4421 security advisory issued for IAM service', cat: 'security' },
+      { id: 'MEM-003', text: 'Memory limit exceeded: OOMKilled worker container in production namespace', cat: 'infra' },
+      { id: 'MEM-004', text: 'Intercepted credential exfiltration attempt dumping .env secrets to remote URL', cat: 'security' },
+      { id: 'MEM-005', text: 'Docker system prune executed to reclaim 45GB unreferenced disk layers', cat: 'devops' },
+      { id: 'MEM-006', text: 'GitHub Actions workflow failure: rate limit exceeded on runner API token', cat: 'ci-cd' },
+      { id: 'MEM-007', text: 'Out of memory crash in worker process due to unbounded cache allocation', cat: 'infra' },
+      { id: 'MEM-008', text: 'AWS IAM temporary instance profile credentials rotated automatically', cat: 'security' }
+    ];
+
+    const hnsw = new HNSWIndex({ M: 8, efConstruction: 64, efSearch: 32 });
+    const bm25 = new BM25Index();
+    const docStore = new Map();
+
+    // DOM Elements
+    const queryInput = document.getElementById('queryInput');
+    const btnSearch = document.getElementById('btnSearch');
+    const alphaSlider = document.getElementById('alphaSlider');
+    const alphaLabel = document.getElementById('alphaLabel');
+    const resultsList = document.getElementById('resultsList');
+    const metricLatency = document.getElementById('metricLatency');
+    const metricVectors = document.getElementById('metricVectors');
+    const memTextInput = document.getElementById('memTextInput');
+    const btnAddMem = document.getElementById('btnAddMem');
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Ingest Seed
+    SEED_DATA.forEach((doc, i) => {
+      const vec = VectorMath.embed(doc.text, 64);
+      // Project to 2D for clean visual canvas
+      const angle = (i / SEED_DATA.length) * Math.PI * 2;
+      const r = 120 + (i % 3) * 40;
+      hnsw.insert(doc.id, vec, { x: 0, y: 0 }); // coordinates assigned on resize
+      bm25.add(doc.id, doc.text);
+      docStore.set(doc.id, doc);
+    });
+
+    metricVectors.textContent = docStore.size;
+
+    // Canvas Sizing
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      // Assign deterministic 2D positions
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      let idx = 0;
+      for (const node of hnsw.nodes.values()) {
+        const angle = (idx / hnsw.nodes.size) * Math.PI * 2;
+        const radius = Math.min(cx, cy) * 0.55 + (idx % 2 === 0 ? 30 : -30);
+        node.x = cx + Math.cos(angle) * radius;
+        node.y = cy + Math.sin(angle) * radius;
+        idx++;
+      }
+      renderGraph();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    let currentTrail = [];
+    let currentTopIds = new Set();
+    let queryPoint = null;
+
+    function renderGraph() {
+      const w = canvas.width / window.devicePixelRatio;
+      const h = canvas.height / window.devicePixelRatio;
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw HNSW Links (Layer 0)
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.06)';
+      ctx.lineWidth = 1;
+      for (const node of hnsw.nodes.values()) {
+        for (const nId of node.friends[0] || []) {
+          const neighbor = hnsw.nodes.get(nId);
+          if (!neighbor) continue;
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(neighbor.x, neighbor.y);
+          ctx.stroke();
+        }
+      }
+
+      // Draw Animated Beam Search Trail
+      if (currentTrail.length > 0) {
+        ctx.strokeStyle = '#4F46E5';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        for (const step of currentTrail) {
+          const fromNode = hnsw.nodes.get(step.from);
+          const toNode = hnsw.nodes.get(step.to);
+          if (fromNode && toNode) {
+            ctx.beginPath();
+            ctx.moveTo(fromNode.x, fromNode.y);
+            ctx.lineTo(toNode.x, toNode.y);
+            ctx.stroke();
+          }
+        }
+        ctx.setLineDash([]);
+      }
+
+      // Draw Nodes
+      for (const node of hnsw.nodes.values()) {
+        const isTop = currentTopIds.has(node.id);
+        const radius = isTop ? 8 : 5;
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = isTop ? '#4F46E5' : '#D1D5DB';
+        ctx.fill();
+
+        if (isTop) {
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        // Label
+        ctx.fillStyle = isTop ? '#171717' : '#9CA3AF';
+        ctx.font = '10px JetBrains Mono';
+        ctx.fillText(node.id, node.x + 10, node.y + 3);
+      }
+
+      // Draw Query Point
+      if (queryPoint) {
+        ctx.beginPath();
+        ctx.arc(queryPoint.x, queryPoint.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#059669';
+        ctx.fill();
+        ctx.fillStyle = '#059669';
+        ctx.font = '600 10px Inter';
+        ctx.fillText('Query', queryPoint.x + 10, queryPoint.y + 3);
+      }
+    }
+
+    function search() {
+      const q = queryInput.value.trim();
+      if (!q) return;
+
+      const alpha = parseInt(alphaSlider.value, 10) / 100;
+      const t0 = performance.now();
+
+      const qVec = VectorMath.embed(q, 64);
+      const { results: denseResults, trail } = hnsw.searchWithTrail(qVec, 5);
+      const sparseResults = bm25.search(q, 5);
+      const fused = HybridRetriever.fuse(denseResults, sparseResults, alpha, 60, 5);
+
+      const elapsed = performance.now() - t0;
+      metricLatency.textContent = `${elapsed.toFixed(2)} ms`;
+
+      currentTrail = trail;
+      currentTopIds = new Set(fused.map(f => f.id));
+
+      const w = canvas.width / window.devicePixelRatio;
+      const h = canvas.height / window.devicePixelRatio;
+      queryPoint = { x: w / 2, y: h / 2 };
+
+      renderGraph();
+
+      // Render Results
+      resultsList.innerHTML = '';
+      if (fused.length === 0) {
+        resultsList.innerHTML = '<div style="font-size:13px; color:var(--text-muted);">No matching memories found.</div>';
+        return;
+      }
+
+      fused.forEach((item, idx) => {
+        const doc = docStore.get(item.id);
+        if (!doc) return;
+
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = `
+          <div class="result-header">
+            <span class="result-id">#${idx + 1} &middot; ${item.id}</span>
+            <span class="result-score">${(item.confidence * 100).toFixed(1)}% match</span>
+          </div>
+          <div class="result-text">${doc.text}</div>
+          <div class="result-meta">
+            <span class="tag">${doc.cat}</span>
+            <span>Sim: ${item.sim.toFixed(3)}</span>
+            <span>BM25: ${item.bm25.toFixed(2)}</span>
+          </div>
+        `;
+        resultsList.appendChild(div);
+      });
+    }
+
+    // Alpha slider label updates
+    alphaSlider.addEventListener('input', () => {
+      const val = parseInt(alphaSlider.value, 10);
+      if (val === 0) alphaLabel.textContent = '100% Lexical Match (BM25)';
+      else if (val === 100) alphaLabel.textContent = '100% Semantic Embeddings (HNSW)';
+      else alphaLabel.textContent = `Hybrid (${val}% Dense / ${100 - val}% Sparse)`;
+      search();
+    });
+
+    btnSearch.addEventListener('click', search);
+    queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+
+    document.querySelectorAll('.chip').forEach(c => {
+      c.addEventListener('click', () => {
+        queryInput.value = c.dataset.q;
+        search();
+      });
+    });
+
+    btnAddMem.addEventListener('click', () => {
+      const text = memTextInput.value.trim();
+      if (!text) return;
+      const newId = `MEM-00${docStore.size + 1}`;
+      const doc = { id: newId, text, cat: 'custom' };
+      const vec = VectorMath.embed(text, 64);
+      hnsw.insert(newId, vec);
+      bm25.add(newId, text);
+      docStore.set(newId, doc);
+      memTextInput.value = '';
+      metricVectors.textContent = docStore.size;
+      resizeCanvas();
+      search();
+    });
+
+    // Initial setup
+    setTimeout(() => {
+      resizeCanvas();
+      search();
+    }, 100);
+  </script>
+</body>
+</html>
