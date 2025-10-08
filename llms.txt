@@ -1,0 +1,45 @@
+# synapse
+
+> Sub-millisecond in-memory vector database with HNSW skip-graph indexer, hybrid BM25 lexical retriever, and SQ8 vector quantization. Zero dependencies.
+
+## Architecture & Data Flow
+
+- **HNSW Index (`engine/memory-store.js`)**: Multi-layer skip-graph using cosine similarity. Entry points dynamically traversed from top layers (probabilistic $L = \lfloor -\ln(\text{rand}) \cdot m_L \rfloor$) to base layer $L_0$ for beam search with size `efSearch`.
+- **SQ8 Quantization (`engine/memory-store.js`)**: Linear scalar quantization mapping Float32 components to Int8 (`[-128, 127]`). Achieves 4x RAM reduction with $<0.001\%$ mean cosine distortion.
+- **BM25 Inverted Index (`engine/memory-store.js`)**: Lexical search engine calculating Okapi BM25 scores with $k_1=1.5, b=0.75$.
+- **Hybrid Retrieval (RRF)**: Combines dense vector distance and sparse BM25 scores using Reciprocal Rank Fusion:
+  $$RRF(d) = \frac{\alpha}{60 + \text{rank}_{dense}(d)} + \frac{1 - \alpha}{60 + \text{rank}_{sparse}(d)}$$
+
+## Public API
+
+```javascript
+const { SynapseStore } = require('./engine/memory-store');
+
+const store = new SynapseStore({
+  dim: 128,          // Vector dimension
+  M: 16,             // Max bi-directional links per node
+  efConstruction: 64,// Search depth during insertion
+  efSearch: 32,      // Search depth during query
+  quantize: 'sq8'    // 'none' | 'sq8'
+});
+
+// Insert document
+store.insert({
+  id: 'doc-1',
+  vector: Float32Array.from([...]),
+  text: 'Database connection timeout on port 5432',
+  metadata: { service: 'auth' }
+});
+
+// Hybrid search
+const results = store.hybridSearch({
+  vector: Float32Array.from([...]),
+  text: 'port 5432 connection error',
+  topK: 10,
+  alpha: 0.65 // 0.0 = pure BM25, 1.0 = pure Vector
+});
+```
+
+## Reproducible Benchmark Suite
+
+- `node tests/audit-benchmark.js`: Evaluates Recall@10 against brute-force exact search, P50/P90/P99 query latency, and SQ8 cosine distortion across dimensions 32 to 768.
