@@ -1,16 +1,26 @@
-# SYNAPSE // Sub-Millisecond In-Memory Vector & Hybrid Search Engine
+# SYNAPSE
+### Sub-Millisecond In-Memory Vector & Hybrid Search Engine
 
 <p align="center">
-  <img src="screenshot.png" alt="SYNAPSE Dashboard" width="100%" />
+  <img src="screenshot.png" alt="SYNAPSE Studio" width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/millymilly29/synapse/actions"><img src="https://img.shields.io/badge/tests-17%20passed-00ff9d?style=for-the-badge&logo=vitest&logoColor=black" alt="Tests"></a>
-  <img src="https://img.shields.io/badge/latency-0.56ms%20P50-00f0ff?style=for-the-badge" alt="Latency">
-  <img src="https://img.shields.io/badge/quantization-SQ8%20(-75%25)-ffb800?style=for-the-badge" alt="SQ8 Quantization">
-  <img src="https://img.shields.io/badge/throughput-1%2C610%20QPS-a142f4?style=for-the-badge" alt="Throughput">
-  <img src="https://img.shields.io/badge/dependencies-0%20(zero--dep)-white?style=for-the-badge" alt="Zero Dependencies">
-  <img src="https://img.shields.io/badge/license-MIT-white?style=for-the-badge" alt="License">
+  <a href="https://millymilly29.github.io/synapse.html"><img src="https://img.shields.io/badge/demo-live%20studio-080806?style=flat-square&labelColor=161616" alt="Live Studio"></a>
+  <a href="https://github.com/millymilly29/synapse/actions"><img src="https://img.shields.io/badge/tests-17%20passed-080806?style=flat-square&labelColor=161616" alt="Tests"></a>
+  <img src="https://img.shields.io/badge/latency-%3C0.6ms%20P50-080806?style=flat-square&labelColor=161616" alt="Latency">
+  <img src="https://img.shields.io/badge/quantization-SQ8%20(-75%25)-080806?style=flat-square&labelColor=161616" alt="SQ8 Quantization">
+  <img src="https://img.shields.io/badge/throughput-1%2C610%20QPS-080806?style=flat-square&labelColor=161616" alt="Throughput">
+  <img src="https://img.shields.io/badge/runtime-zero%20dependencies-080806?style=flat-square&labelColor=161616" alt="Zero Dependencies">
+  <img src="https://img.shields.io/badge/license-MIT-080806?style=flat-square&labelColor=161616" alt="License">
+</p>
+
+<p align="center">
+  <a href="https://millymilly29.github.io/synapse.html"><strong>Live Interactive Studio ↗</strong></a> &nbsp;·&nbsp;
+  <a href="https://millymilly29.github.io/portfolio/synapse.html">Case Study ↗</a> &nbsp;·&nbsp;
+  <a href="#core-architectural-foundations">Architecture</a> &nbsp;·&nbsp;
+  <a href="#empirical-performance-benchmarks-nodejs-v24-apple-silicon">Benchmarks</a> &nbsp;·&nbsp;
+  <a href="#quick-start--verification">Quickstart</a>
 </p>
 
 > **Zero-Dependency Vector Database, HNSW Skip-Graph Indexer & Reciprocal Rank Fusion (RRF) Engine for Autonomous Edge Agents.**  
@@ -46,9 +56,9 @@
 
 ---
 
-## ⚡ The Problem: Why Edge Agents Cannot Rely on Cloud Vector DBs
+## Problem Space & Motivation: Edge Memory Constraints
 
-In modern autonomous multi-agent systems, agents query episodic memory on every decision loop (recalling tool parameters, authentication states, prior errors, user instructions).
+In autonomous multi-agent systems, agents query episodic memory on every decision loop (recalling tool parameters, authentication states, prior errors, user instructions).
 
 1. **Cloud Latency Overhead:** Cloud vector DBs (Pinecone, Qdrant, Weaviate) introduce 80–250ms HTTP round-trip network latency on every agent thought loop.
 2. **Heavy Docker / Python Footprints:** Local alternatives like ChromaDB or Faiss require heavyweight Python environments, native C++ compiler toolchains, or 1GB+ container images.
@@ -59,7 +69,7 @@ In modern autonomous multi-agent systems, agents query episodic memory on every 
 
 ---
 
-## 🏗️ Key Architectural Breakthroughs
+## Core Architectural Foundations
 
 ### 1. Hierarchical Navigable Small World (HNSW) Skip Graph
 - Multi-layer probabilistic skip graph with logarithmic $O(\log N)$ search complexity.
@@ -83,7 +93,7 @@ In modern autonomous multi-agent systems, agents query episodic memory on every 
 
 ---
 
-## 📊 Performance Benchmarks (Node.js v24, Apple Silicon)
+## Empirical Performance Benchmarks (Node.js v24, Apple Silicon)
 
 | Metric | Result | Industry Baseline (Chroma/Cloud) | Improvement |
 | :--- | :---: | :---: | :---: |
@@ -96,7 +106,7 @@ In modern autonomous multi-agent systems, agents query episodic memory on every 
 
 ---
 
-## 🚀 Quick Start
+## Quick Start & Verification
 
 ```bash
 git clone https://github.com/millymilly29/synapse.git
@@ -121,7 +131,7 @@ Open `index.html` directly in any web browser (no build step or server required)
 
 ---
 
-## 🔌 Programmatic API
+## Programmatic API
 
 ```javascript
 const { EpisodicMemoryStore } = require('./engine/memory-store');
@@ -155,6 +165,6 @@ console.log(memories[0].text);
 
 ---
 
-## 📄 License
+## License
 
 MIT © [Kirill Tsyganov](mailto:millyrock2900@gmail.com)
