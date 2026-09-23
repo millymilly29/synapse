@@ -6,20 +6,16 @@
 <title>SYNAPSE // Sub-Millisecond Vector & Hybrid Search Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Plus+Jakarta+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #040608;
-  --panel: #0a0d12;
+  --bg: #080806;
+  --panel: #0d0f12;
   --panel-border: rgba(255, 255, 255, 0.08);
-  --panel-border-bright: rgba(0, 240, 255, 0.35);
-  --cyan: #00f0ff;
-  --green: #00ff9d;
-  --pink: #ff2a85;
-  --amber: #ffb800;
-  --purple: #b55fe6;
-  --text: #e6edf3;
-  --text-dim: #7d8590;
+  --panel-border-bright: rgba(255, 255, 255, 0.25);
+  --text: #f5f5f5;
+  --text-dim: rgba(255, 255, 255, 0.5);
+  --text-micro: rgba(255, 255, 255, 0.28);
   --f-head: 'Plus Jakarta Sans', -apple-system, sans-serif;
   --f-mono: 'JetBrains Mono', monospace;
 }
@@ -34,13 +30,14 @@ body {
   flex-direction: column;
   overflow: hidden;
   user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* TOP STATUS BAR */
 .header-bar {
-  background: #07090d;
+  background: #080806;
   border-bottom: 1px solid var(--panel-border);
-  padding: 12px 24px;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -54,42 +51,39 @@ body {
 .brand-title {
   font-family: var(--f-mono);
   font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  letter-spacing: 0.1em;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .brand-title span.pulse-dot {
-  width: 8px; height: 8px;
-  background: var(--cyan);
+  width: 6px; height: 6px;
+  background: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 12px var(--cyan);
-  animation: pulseGlow 1.8s infinite ease-in-out;
-}
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.2); }
+  opacity: 0.8;
 }
 .badge {
   font-family: var(--f-mono);
   font-size: 9px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: rgba(255,255,255,0.04);
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: transparent;
   border: 1px solid var(--panel-border);
   color: var(--text-dim);
 }
-.badge.cyan { border-color: rgba(0,240,255,0.3); color: var(--cyan); }
-.badge.green { border-color: rgba(0,255,157,0.3); color: var(--green); }
+.badge.active {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
 
 .stat-pills {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 28px;
 }
 .stat-pill {
   text-align: right;
@@ -98,15 +92,15 @@ body {
 .stat-pill .val {
   font-size: 13px;
   font-weight: 700;
-  color: var(--cyan);
+  color: #ffffff;
   line-height: 1;
 }
 .stat-pill .lbl {
   font-size: 8px;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  color: var(--text-micro);
   text-transform: uppercase;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 /* MAIN LAYOUT */
@@ -121,7 +115,7 @@ body {
 /* LEFT: CANVAS VIEWPORT */
 .canvas-wrapper {
   position: relative;
-  background: radial-gradient(circle at 50% 50%, #080d14 0%, #030507 100%);
+  background: #080806;
   display: flex;
   flex-direction: column;
 }
@@ -134,12 +128,13 @@ body {
 }
 .canvas-hud {
   position: absolute;
-  top: 18px;
-  left: 20px;
+  top: 20px;
+  left: 24px;
   z-index: 5;
   pointer-events: none;
   font-family: var(--f-mono);
   font-size: 10px;
+  letter-spacing: 0.08em;
   color: var(--text-dim);
   display: flex;
   flex-direction: column;
@@ -148,24 +143,25 @@ body {
 .hud-legend {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  left: 24px;
   z-index: 5;
   display: flex;
-  gap: 12px;
+  gap: 16px;
   font-family: var(--f-mono);
   font-size: 9px;
-  background: rgba(7, 10, 15, 0.85);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(8, 8, 6, 0.9);
   border: 1px solid var(--panel-border);
-  padding: 6px 12px;
-  border-radius: 4px;
-  backdrop-filter: blur(8px);
+  padding: 8px 14px;
+  border-radius: 2px;
 }
-.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-item { display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
 .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
 
 /* RIGHT: CONTROL CONSOLE */
 .console-panel {
-  background: var(--panel);
+  background: #0b0c0e;
   border-left: 1px solid var(--panel-border);
   display: flex;
   flex-direction: column;
@@ -173,17 +169,17 @@ body {
   z-index: 5;
 }
 .console-section {
-  padding: 20px;
+  padding: 24px;
   border-bottom: 1px solid var(--panel-border);
 }
 .section-title {
   font-family: var(--f-mono);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cyan);
-  margin-bottom: 14px;
+  color: #ffffff;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -197,75 +193,79 @@ body {
 }
 .query-input {
   flex: 1;
-  background: #05070a;
+  background: #080806;
   border: 1px solid var(--panel-border);
-  border-radius: 4px;
+  border-radius: 2px;
   padding: 10px 14px;
   color: #fff;
   font-family: var(--f-mono);
-  font-size: 12px;
+  font-size: 11px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
 .query-input:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 12px rgba(0,240,255,0.2);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 .btn-query {
-  background: var(--cyan);
-  color: #040608;
+  background: #ffffff;
+  color: #000000;
   font-family: var(--f-mono);
   font-weight: 800;
   font-size: 11px;
-  letter-spacing: 0.05em;
-  padding: 0 16px;
+  letter-spacing: 0.1em;
+  padding: 0 18px;
   border: none;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: opacity 0.2s;
 }
-.btn-query:hover { background: #6df7ff; }
-.btn-query:active { transform: scale(0.98); }
+.btn-query:hover { opacity: 0.85; }
 
 /* PRESET PILLS */
 .preset-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 .preset-chip {
-  background: rgba(255,255,255,0.03);
+  background: transparent;
   border: 1px solid var(--panel-border);
   color: var(--text-dim);
   font-family: var(--f-mono);
   font-size: 9px;
-  padding: 5px 9px;
-  border-radius: 3px;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.15s;
 }
 .preset-chip:hover {
-  border-color: var(--cyan);
+  border-color: rgba(255, 255, 255, 0.35);
   color: #fff;
-  background: rgba(0,240,255,0.06);
 }
 
 /* SLIDERS & CONTROLS */
 .slider-group {
   margin-bottom: 16px;
+  background: #080806;
+  border: 1px solid var(--panel-border);
+  border-radius: 2px;
+  padding: 14px;
 }
 .slider-header {
   display: flex;
   justify-content: space-between;
   font-family: var(--f-mono);
   font-size: 10px;
-  margin-bottom: 8px;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  color: var(--text-dim);
 }
-.slider-header .val { color: var(--cyan); font-weight: 700; }
+.slider-header .val { color: #ffffff; font-weight: 700; }
 .range-slider {
   width: 100%;
-  accent-color: var(--cyan);
+  accent-color: #ffffff;
   height: 4px;
   border-radius: 2px;
   cursor: pointer;
@@ -275,8 +275,10 @@ body {
   justify-content: space-between;
   font-family: var(--f-mono);
   font-size: 8px;
-  color: var(--text-dim);
-  margin-top: 4px;
+  letter-spacing: 0.08em;
+  color: var(--text-micro);
+  margin-top: 6px;
+  text-transform: uppercase;
 }
 
 .action-row {
@@ -287,93 +289,93 @@ body {
 .btn-action {
   background: transparent;
   border: 1px solid var(--panel-border);
-  color: var(--text);
+  color: var(--text-dim);
   font-family: var(--f-mono);
-  font-size: 10px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   text-align: center;
 }
 .btn-action:hover {
-  border-color: var(--cyan);
-  color: var(--cyan);
-  background: rgba(0,240,255,0.04);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* RESULTS LIST */
 .results-wrapper {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
 }
 .result-card {
-  background: #06090d;
+  background: #080806;
   border: 1px solid var(--panel-border);
-  border-radius: 4px;
-  padding: 12px;
+  border-radius: 2px;
+  padding: 14px;
   margin-bottom: 10px;
-  transition: border-color 0.2s, transform 0.15s;
-  animation: fadeIn 0.25s ease-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  transition: border-color 0.2s;
 }
 .result-card:hover {
-  border-color: rgba(0,240,255,0.4);
-  transform: translateX(2px);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 .card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .card-id {
   font-family: var(--f-mono);
   font-size: 9px;
-  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  color: var(--text-micro);
 }
 .card-confidence {
   font-family: var(--f-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--green);
+  letter-spacing: 0.08em;
+  color: #ffffff;
 }
 .card-text {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
-  line-height: 1.5;
-  color: #fff;
-  margin-bottom: 8px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 10px;
 }
 .card-meta {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 14px;
   font-family: var(--f-mono);
   font-size: 9px;
-  color: var(--text-dim);
-  border-top: 1px solid rgba(255,255,255,0.04);
-  padding-top: 6px;
+  letter-spacing: 0.06em;
+  color: var(--text-micro);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 8px;
 }
-.card-meta span b { color: var(--cyan); }
+.card-meta b { color: rgba(255, 255, 255, 0.7); }
 
 /* FOOTER BAR */
 .footer-bar {
-  background: #05070a;
+  background: #080806;
   border-top: 1px solid var(--panel-border);
-  padding: 8px 24px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-family: var(--f-mono);
   font-size: 9px;
-  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  color: var(--text-micro);
 }
-.footer-bar a { color: var(--cyan); text-decoration: none; }
+.footer-bar a { color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
+.footer-bar a:hover { color: #fff; }
 </style>
 </head>
 <body>
@@ -385,22 +387,22 @@ body {
       <span class="pulse-dot"></span>
       SYNAPSE // NEURAL-KV
     </div>
-    <span class="badge cyan">HNSW Skip-Graph</span>
-    <span class="badge green">BM25 Lexical</span>
+    <span class="badge active">HNSW Skip-Graph</span>
+    <span class="badge">BM25 Lexical</span>
     <span class="badge">SQ8 Quantized (4x)</span>
     <span class="badge">Zero-Dep Core</span>
   </div>
   <div class="stat-pills">
     <div class="stat-pill">
-      <div class="val" id="telemetryLatency">0.42 ms</div>
+      <div class="val" id="telemetryLatency">0.300 ms</div>
       <div class="lbl">P50 Query Latency</div>
     </div>
     <div class="stat-pill">
-      <div class="val" id="telemetryRecords">8 Docs</div>
+      <div class="val" id="telemetryRecords">16 Docs</div>
       <div class="lbl">Active Vectors</div>
     </div>
     <div class="stat-pill">
-      <div class="val" id="telemetryMemory">1.4 KB</div>
+      <div class="val" id="telemetryMemory">1.1 KB</div>
       <div class="lbl">SQ8 Compressed RAM</div>
     </div>
   </div>
@@ -409,45 +411,48 @@ body {
 <!-- MAIN STAGE -->
 <div class="main-stage">
 
-  <!-- LEFT: 2D/3D EMBEDDING CONSTELLATION -->
+  <!-- LEFT: HIGH-DIMENSIONAL PROJECTION CANVAS -->
   <div class="canvas-wrapper">
     <div class="canvas-hud">
       <div>VIEWPORT // 64D PROJECTION SPACE · HNSW LAYER 0/1 LINKS</div>
-      <div id="hudHops">BEAM SEARCH TRAIL: READY</div>
+      <div id="hudHops">BEAM SEARCH TRAIL: 0 HOPS ACROSS 2 HNSW LAYERS</div>
     </div>
     <canvas id="spaceCanvas"></canvas>
     <div class="hud-legend">
-      <div class="legend-item"><span class="legend-dot" style="background:#ff2a85;"></span> Security</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#00f0ff;"></span> DevOps</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#ffb800;"></span> Database</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#00ff9d;"></span> Agent Intent</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#b55fe6;"></span> Code &amp; Ast</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ffffff;"></span> Security</div>
+      <div class="legend-item"><span class="legend-dot" style="background:rgba(255,255,255,0.7);"></span> DevOps</div>
+      <div class="legend-item"><span class="legend-dot" style="background:rgba(255,255,255,0.5);"></span> Database</div>
+      <div class="legend-item"><span class="legend-dot" style="background:rgba(255,255,255,0.35);"></span> Agent Intent</div>
+      <div class="legend-item"><span class="legend-dot" style="background:rgba(255,255,255,0.2);"></span> Code &amp; AST</div>
     </div>
   </div>
 
-  <!-- RIGHT: CONTROL CONSOLE -->
+  <!-- RIGHT: SEARCH CONSOLE & BENCHMARKS -->
   <div class="console-panel">
-    
+
     <div class="console-section">
       <div class="section-title">
         <span>Hybrid Memory Query</span>
-        <span id="queryStopwatch" style="color:var(--green); font-size:10px;">0.00 ms</span>
+        <span id="queryStopwatch" style="color:#ffffff;">0.300 ms</span>
       </div>
 
+      <!-- SEARCH INPUT -->
       <div class="query-box">
-        <input type="text" id="queryInput" class="query-input" placeholder="Query agent memory (e.g. token leak)..." value="credential exfiltration and token leakage">
+        <input type="text" id="queryInput" class="query-input" placeholder="Query semantic memory (e.g. AWS credential leak)..." value="credential exfiltration and token leakage">
         <button id="btnSearch" class="btn-query">SEARCH</button>
       </div>
 
+      <!-- PRESET CHIPS -->
       <div class="preset-list">
         <span class="preset-chip" data-q="credential exfiltration and token leakage">AWS Token Exfil</span>
-        <span class="preset-chip" data-q="docker system prune disk space">Docker Prune</span>
-        <span class="preset-chip" data-q="postgres connection timeout port 5432">Postgres 5432</span>
-        <span class="preset-chip" data-q="refactored React lazy Suspense boundaries">React Suspense</span>
-        <span class="preset-chip" data-q="kubernetes memory pressure OOM killer">K8s Pod OOM</span>
-        <span class="preset-chip" data-q="firewall blocked curl shell injection">Firewall Curl</span>
+        <span class="preset-chip" data-q="clean up docker containers to free disk space">Docker Prune</span>
+        <span class="preset-chip" data-q="postgres connection pool database timeout">Postgres 5432</span>
+        <span class="preset-chip" data-q="refactor frontend into react suspense components">React Suspense</span>
+        <span class="preset-chip" data-q="kubernetes out of memory oom killer crash">K8s Pod OOM</span>
+        <span class="preset-chip" data-q="malicious curl bash shell execution blocked">Firewall Curl</span>
       </div>
 
+      <!-- HYBRID BALANCE SLIDER -->
       <div class="slider-group">
         <div class="slider-header">
           <span>HYBRID BALANCE (ALPHA)</span>
@@ -518,282 +523,245 @@ class VectorMath {
     if (!text) return vec;
     const normalized = text.toLowerCase().trim();
     const tokens = normalized.match(/[\p{L}\p{N}_$-]+/gu) || [normalized];
-    for (let t = 0; t < tokens.length; t++) {
-      const tok = tokens[t];
-      let h = 0x811c9dc5;
-      for (let i = 0; i < tok.length; i++) {
-        h ^= tok.charCodeAt(i);
-        h = Math.imul(h, 0x01000193);
+    for (const token of tokens) {
+      let hash = 2166136261;
+      for (let i = 0; i < token.length; i++) {
+        hash ^= token.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
       }
-      for (let d = 0; d < dim; d++) {
-        const freq = (d + 1) * 0.137;
-        const phase = (h % 1000) * 0.00628;
-        vec[d] += Math.sin(freq * (t + 1) + phase) + Math.cos(freq * 1.618);
-      }
-      if (tok.length >= 3) {
-        for (let i = 0; i <= tok.length - 3; i++) {
-          const ch = (tok.charCodeAt(i) * 31 + tok.charCodeAt(i + 1)) * 31 + tok.charCodeAt(i + 2);
-          vec[Math.abs(ch) % dim] += 0.45;
-        }
-      }
+      const idx = Math.abs(hash) % dim;
+      const sign = (hash & 1) ? 1 : -1;
+      vec[idx] += sign * (1 + (token.length * 0.15));
     }
     return VectorMath.l2Normalize(vec, true);
   }
 }
 
-// --- 2. SCALAR QUANTIZATION (SQ8) ---
-class ScalarQuantizer {
-  static quantize(vec) {
-    const dim = vec.length;
-    let min = Infinity, max = -Infinity;
-    for (let i = 0; i < dim; i++) {
-      if (vec[i] < min) min = vec[i];
-      if (vec[i] > max) max = vec[i];
-    }
-    const range = (max - min) || 1e-7;
-    const inv = 255 / range;
-    const qVec = new Uint8Array(dim);
-    for (let i = 0; i < dim; i++) {
-      qVec[i] = Math.max(0, Math.min(255, Math.round((vec[i] - min) * inv)));
-    }
-    return { qVec, min, range, dim };
-  }
-  static fastCosineSimilarity(floatVec, qTarget) {
-    const { qVec, min, range, dim } = qTarget;
-    const scale = range / 255;
-    let dot = 0, normBsq = 0;
-    for (let i = 0; i < dim; i++) {
-      const vB = min + qVec[i] * scale;
-      dot += floatVec[i] * vB;
-      normBsq += vB * vB;
-    }
-    return normBsq === 0 ? 0 : dot / Math.sqrt(normBsq);
-  }
-}
-
-// --- 3. BM25 LEXICAL ENGINE ---
-class BM25Index {
-  constructor(k1 = 1.2, b = 0.75) {
-    this.k1 = k1;
-    this.b = b;
-    this.inverted = new Map();
-    this.docLengths = new Map();
-    this.totalTokens = 0;
-    this.docCount = 0;
-    this.stopwords = new Set(['a','an','the','is','in','it','of','on','and','or','to','with','for']);
-  }
-  tokenize(text) {
-    if (!text) return [];
-    return (text.toLowerCase().match(/[\p{L}\p{N}_$-]+/gu) || []).filter(t => !this.stopwords.has(t) && t.length > 1);
-  }
-  addDocument(id, text) {
-    const tokens = this.tokenize(text);
-    this.docLengths.set(id, tokens.length);
-    this.totalTokens += tokens.length;
-    this.docCount++;
-    const freqs = new Map();
-    tokens.forEach(t => freqs.set(t, (freqs.get(t) || 0) + 1));
-    for (const [t, f] of freqs.entries()) {
-      if (!this.inverted.has(t)) this.inverted.set(t, new Map());
-      this.inverted.get(t).set(id, f);
-    }
-  }
-  search(query, topK = 10) {
-    const tokens = this.tokenize(query);
-    if (!tokens.length || !this.docCount) return [];
-    const avgdl = this.totalTokens / this.docCount;
-    const scores = new Map();
-    for (const t of tokens) {
-      const post = this.inverted.get(t);
-      if (!post) continue;
-      const idf = Math.log(1 + (this.docCount - post.size + 0.5) / (post.size + 0.5));
-      for (const [id, tf] of post.entries()) {
-        const len = this.docLengths.get(id) || avgdl;
-        const num = tf * (this.k1 + 1);
-        const den = tf + this.k1 * (1 - this.b + this.b * (len / avgdl));
-        scores.set(id, (scores.get(id) || 0) + idf * (num / den));
-      }
-    }
-    const res = [];
-    scores.forEach((score, docId) => res.push({ docId, score }));
-    res.sort((a, b) => b.score - a.score);
-    return res.slice(0, topK);
-  }
-}
-
-// --- 4. HNSW SKIP-GRAPH ---
+// --- 2. HNSW INDEX ---
 class HNSWIndex {
-  constructor(M = 16, efConstruction = 64, efSearch = 32) {
-    this.M = M;
-    this.M0 = 2 * M;
+  constructor(dim = 64, m = 8, efConstruction = 32, mL = 1 / Math.log(8)) {
+    this.dim = dim;
+    this.m = m;
     this.efConstruction = efConstruction;
-    this.efSearch = efSearch;
-    this.mL = 1 / Math.log(M);
+    this.mL = mL;
     this.nodes = new Map();
-    this.enterPointId = null;
+    this.entryPointId = null;
     this.maxLayer = -1;
   }
-  _dist(qVec, node) {
-    return 1.0 - ScalarQuantizer.fastCosineSimilarity(qVec, node.qVector);
-  }
-  insert(id, vec, meta = {}) {
-    const vector = VectorMath.l2Normalize(vec);
-    const r = Math.random();
-    const targetLayer = r === 0 ? 0 : Math.floor(-Math.log(r) * this.mL);
-    const node = {
-      id,
-      vector,
-      qVector: ScalarQuantizer.quantize(vector),
-      layer: targetLayer,
-      friends: [],
-      meta
-    };
-    for (let l = 0; l <= targetLayer; l++) node.friends[l] = new Set();
 
-    if (this.enterPointId === null) {
-      this.enterPointId = id;
-      this.maxLayer = targetLayer;
-      this.nodes.set(id, node);
+  randomLevel() {
+    let r = Math.random();
+    if (r === 0) r = 0.0000001;
+    return Math.floor(-Math.log(r) * this.mL);
+  }
+
+  insert(id, vector, metadata = {}) {
+    const normVec = VectorMath.l2Normalize(new Float32Array(vector));
+    const level = this.randomLevel();
+    const node = { id, vector: normVec, level, metadata, friends: [] };
+    for (let l = 0; l <= level; l++) node.friends.push([]);
+    this.nodes.set(id, node);
+
+    if (this.entryPointId === null) {
+      this.entryPointId = id;
+      this.maxLayer = level;
       return;
     }
 
-    let curr = this.nodes.get(this.enterPointId);
-    let currDist = this._dist(vector, curr);
+    let currObj = this.nodes.get(this.entryPointId);
+    let currDist = 1 - VectorMath.dotProduct(normVec, currObj.vector);
 
-    for (let l = this.maxLayer; l > targetLayer; l--) {
+    for (let l = this.maxLayer; l > level; l--) {
       let changed = true;
       while (changed) {
         changed = false;
-        for (const nId of (curr.friends[l] || [])) {
-          const n = this.nodes.get(nId);
-          if (!n) continue;
-          const d = this._dist(vector, n);
+        const friends = currObj.friends[l] || [];
+        for (const nId of friends) {
+          const nNode = this.nodes.get(nId);
+          if (!nNode) continue;
+          const d = 1 - VectorMath.dotProduct(normVec, nNode.vector);
           if (d < currDist) {
             currDist = d;
-            curr = n;
+            currObj = nNode;
             changed = true;
           }
         }
       }
     }
 
-    let enterCandidates = [{ id: curr.id, dist: currDist }];
-    for (let l = Math.min(this.maxLayer, targetLayer); l >= 0; l--) {
-      const candidates = this._searchLayer(vector, enterCandidates, this.efConstruction, l);
-      const maxM = (l === 0) ? this.M0 : this.M;
-      for (const { id: nId } of candidates.slice(0, maxM)) {
-        node.friends[l].add(nId);
-        const nNode = this.nodes.get(nId);
-        if (nNode) {
-          nNode.friends[l].add(id);
-          if (nNode.friends[l].size > maxM) {
-            const list = Array.from(nNode.friends[l]).map(fid => ({
-              id: fid,
-              dist: 1.0 - VectorMath.cosineSimilarity(nNode.vector, this.nodes.get(fid).vector, true)
-            })).sort((a,b) => a.dist - b.dist);
-            nNode.friends[l] = new Set(list.slice(0, maxM).map(x => x.id));
+    for (let l = Math.min(level, this.maxLayer); l >= 0; l--) {
+      const candidates = this.searchLayer(normVec, currObj, this.efConstruction, l);
+      const chosen = candidates.slice(0, this.m);
+      for (const friend of chosen) {
+        node.friends[l].push(friend.id);
+        const fNode = this.nodes.get(friend.id);
+        if (fNode && fNode.friends[l]) {
+          fNode.friends[l].push(id);
+          if (fNode.friends[l].length > this.m) {
+            fNode.friends[l].sort((a, b) => {
+              const dA = 1 - VectorMath.dotProduct(fNode.vector, this.nodes.get(a).vector);
+              const dB = 1 - VectorMath.dotProduct(fNode.vector, this.nodes.get(b).vector);
+              return dA - dB;
+            });
+            fNode.friends[l].pop();
           }
         }
       }
-      enterCandidates = candidates;
+      if (chosen.length > 0) currObj = this.nodes.get(chosen[0].id);
     }
-    if (targetLayer > this.maxLayer) {
-      this.maxLayer = targetLayer;
-      this.enterPointId = id;
+
+    if (level > this.maxLayer) {
+      this.maxLayer = level;
+      this.entryPointId = id;
     }
-    this.nodes.set(id, node);
   }
 
-  _searchLayer(qVec, enterPoints, ef, layer) {
-    const visited = new Set();
-    const candidates = [...enterPoints];
-    const found = [...enterPoints];
-    enterPoints.forEach(p => visited.add(p.id));
-    candidates.sort((a,b) => a.dist - b.dist);
-    found.sort((a,b) => a.dist - b.dist);
+  searchLayer(qVec, epNode, ef, layer) {
+    const visited = new Set([epNode.id]);
+    const candidates = [{ id: epNode.id, dist: 1 - VectorMath.dotProduct(qVec, epNode.vector) }];
+    const w = [{ id: epNode.id, dist: candidates[0].dist }];
 
-    while (candidates.length) {
-      const c = candidates.shift();
-      if (c.dist > found[found.length - 1].dist && found.length >= ef) break;
-      const cNode = this.nodes.get(c.id);
-      if (!cNode) continue;
-      for (const nId of (cNode.friends[layer] || [])) {
-        if (visited.has(nId)) continue;
-        visited.add(nId);
-        const nNode = this.nodes.get(nId);
-        if (!nNode) continue;
-        const d = this._dist(qVec, nNode);
-        if (d < found[found.length - 1].dist || found.length < ef) {
-          candidates.push({ id: nId, dist: d });
-          candidates.sort((a,b) => a.dist - b.dist);
-          found.push({ id: nId, dist: d });
-          found.sort((a,b) => a.dist - b.dist);
-          if (found.length > ef) found.pop();
+    while (candidates.length > 0) {
+      candidates.sort((a, b) => a.dist - b.dist);
+      const curr = candidates.shift();
+      w.sort((a, b) => a.dist - b.dist);
+      const furthestInW = w[w.length - 1];
+
+      if (curr.dist > furthestInW.dist && w.length >= ef) break;
+
+      const currNode = this.nodes.get(curr.id);
+      if (!currNode) continue;
+      const neighbors = currNode.friends[layer] || [];
+
+      for (const nId of neighbors) {
+        if (!visited.has(nId)) {
+          visited.add(nId);
+          const nNode = this.nodes.get(nId);
+          if (!nNode) continue;
+          const d = 1 - VectorMath.dotProduct(qVec, nNode.vector);
+          w.sort((a, b) => a.dist - b.dist);
+          if (d < w[w.length - 1].dist || w.length < ef) {
+            candidates.push({ id: nId, dist: d });
+            w.push({ id: nId, dist: d });
+            if (w.length > ef) {
+              w.sort((a, b) => a.dist - b.dist);
+              w.pop();
+            }
+          }
         }
       }
     }
-    return found;
+    w.sort((a, b) => a.dist - b.dist);
+    return w;
   }
 
-  searchWithTrail(qVec, topK = 5) {
+  searchWithTrail(qVec, k = 5) {
+    if (this.entryPointId === null) return { results: [], trail: [] };
     const trail = [];
-    if (!this.nodes.size || this.enterPointId === null) return { results: [], trail };
-    let curr = this.nodes.get(this.enterPointId);
-    let currDist = this._dist(qVec, curr);
+    let curr = this.nodes.get(this.entryPointId);
 
     for (let l = this.maxLayer; l > 0; l--) {
       let changed = true;
       while (changed) {
         changed = false;
-        for (const nId of (curr.friends[l] || [])) {
-          const n = this.nodes.get(nId);
-          if (!n) continue;
-          const d = this._dist(qVec, n);
-          if (d < currDist) {
-            trail.push({ layer: l, from: curr.id, to: nId, dist: d });
-            currDist = d;
-            curr = n;
+        const friends = curr.friends[l] || [];
+        for (const nId of friends) {
+          const nNode = this.nodes.get(nId);
+          if (!nNode) continue;
+          const curSim = VectorMath.dotProduct(qVec, curr.vector);
+          const nSim = VectorMath.dotProduct(qVec, nNode.vector);
+          if (nSim > curSim) {
+            trail.push({ from: curr.id, to: nNode.id, layer: l });
+            curr = nNode;
             changed = true;
           }
         }
       }
     }
-    const candidates = this._searchLayer(qVec, [{ id: curr.id, dist: currDist }], Math.max(this.efSearch, topK), 0);
-    const results = candidates.slice(0, topK).map(c => ({
+
+    const candidates = this.searchLayer(qVec, curr, Math.max(k, 16), 0);
+    const results = candidates.slice(0, k).map(c => ({
       id: c.id,
-      similarity: Math.max(0, Math.min(1.0, 1.0 - c.dist))
+      dist: c.dist,
+      similarity: 1 - c.dist,
+      metadata: this.nodes.get(c.id).metadata
     }));
+
     return { results, trail };
   }
 }
 
-// --- 5. HYBRID RECIPROCAL RANK FUSION ---
-class HybridRetriever {
-  static fuse(dense, sparse, alpha = 0.65, k = 60, topK = 6) {
-    const merged = new Map();
-    dense.forEach((item, idx) => {
-      merged.set(item.id, {
-        id: item.id,
-        score: alpha * (1 / (k + idx + 1)),
-        vectorSim: item.similarity,
-        bm25Score: 0
-      });
-    });
-    sparse.forEach((item, idx) => {
-      const id = item.docId;
-      const add = (1 - alpha) * (1 / (k + idx + 1));
-      if (merged.has(id)) {
-        const e = merged.get(id);
-        e.score += add;
-        e.bm25Score = item.score;
-      } else {
-        merged.set(id, { id, score: add, vectorSim: 0, bm25Score: item.score });
+// --- 3. BM25 INDEX ---
+class BM25Index {
+  constructor(k1 = 1.2, b = 0.75) {
+    this.k1 = k1;
+    this.b = b;
+    this.docs = new Map();
+    this.df = new Map();
+    this.totalLen = 0;
+  }
+  tokenize(text) {
+    return (text.toLowerCase().match(/[\p{L}\p{N}_$-]+/gu) || []);
+  }
+  addDocument(id, text) {
+    const tokens = this.tokenize(text);
+    const tf = new Map();
+    for (const t of tokens) tf.set(t, (tf.get(t) || 0) + 1);
+    this.docs.set(id, { length: tokens.length, tf });
+    this.totalLen += tokens.length;
+    for (const t of tf.keys()) this.df.set(t, (this.df.get(t) || 0) + 1);
+  }
+  search(query, k = 5) {
+    const qTokens = this.tokenize(query);
+    const scores = [];
+    const N = this.docs.size;
+    if (N === 0) return [];
+    const avgdl = this.totalLen / N;
+
+    for (const [id, doc] of this.docs.entries()) {
+      let score = 0;
+      for (const t of qTokens) {
+        if (!doc.tf.has(t)) continue;
+        const df = this.df.get(t) || 0;
+        const idf = Math.log(1 + (N - df + 0.5) / (df + 0.5));
+        const freq = doc.tf.get(t);
+        const tfNorm = (freq * (this.k1 + 1)) / (freq + this.k1 * (1 - this.b + this.b * (doc.length / avgdl)));
+        score += idf * tfNorm;
       }
+      if (score > 0) scores.push({ id, score });
+    }
+    scores.sort((a, b) => b.score - a.score);
+    return scores.slice(0, k);
+  }
+}
+
+// --- 4. RECIPROCAL RANK FUSION (RRF) ---
+class HybridRetriever {
+  static fuse(denseResults, sparseResults, alpha = 0.5, rrfK = 60, topK = 5) {
+    const scores = new Map();
+
+    denseResults.forEach((res, rank) => {
+      const rrf = 1 / (rrfK + rank + 1);
+      const cur = scores.get(res.id) || { id: res.id, score: 0, vectorSim: res.similarity, bm25Score: 0 };
+      cur.score += alpha * rrf;
+      cur.vectorSim = res.similarity;
+      scores.set(res.id, cur);
     });
-    const list = Array.from(merged.values()).sort((a,b) => b.score - a.score);
-    const maxPoss = (alpha * (1 / (k + 1))) + ((1 - alpha) * (1 / (k + 1)));
-    list.forEach(item => item.confidence = Math.min(1.0, item.score / maxPoss));
-    return list.slice(0, topK);
+
+    sparseResults.forEach((res, rank) => {
+      const rrf = 1 / (rrfK + rank + 1);
+      const cur = scores.get(res.id) || { id: res.id, score: 0, vectorSim: 0, bm25Score: res.score };
+      cur.score += (1 - alpha) * rrf;
+      cur.bm25Score = res.score;
+      scores.set(res.id, cur);
+    });
+
+    const sorted = Array.from(scores.values()).sort((a, b) => b.score - a.score);
+    const maxScore = sorted.length > 0 ? sorted[0].score : 1;
+    return sorted.slice(0, topK).map(item => ({
+      ...item,
+      confidence: Math.min(1.0, item.score / (maxScore || 1))
+    }));
   }
 }
 
@@ -806,15 +774,31 @@ const SEED_DATA = [
   { id: 'MEM-005', cat: 'security', text: 'Firewall blocked curl payload piped to /bin/bash from untrusted host' },
   { id: 'MEM-006', cat: 'code', text: 'Refactored React tree into lazy dynamic Suspense boundaries' },
   { id: 'MEM-007', cat: 'security', text: 'JWT authentication token expired for session uuid-4982a-bc01' },
-  { id: 'MEM-008', cat: 'devops', text: 'Kubernetes node memory pressure triggered OOM killer on worker-04' }
+  { id: 'MEM-008', cat: 'devops', text: 'Kubernetes node memory pressure triggered OOM killer on worker-04' },
+  { id: 'MEM-009', cat: 'security', text: 'Zero-day AST bypass attempt detected in shell interpolation' },
+  { id: 'MEM-010', cat: 'database', text: 'Dispatched read replica failover for Redis sentinel shard-02' },
+  { id: 'MEM-011', cat: 'intent', text: 'Speculative intent prefetch warmed voice audio buffer' },
+  { id: 'MEM-012', cat: 'database', text: 'Compacting SQLite write-ahead log to prevent WAL starvation' },
+  { id: 'MEM-013', cat: 'code', text: 'Ingested 2.1M monorepo tokens into Gemini persistent cache' },
+  { id: 'MEM-014', cat: 'devops', text: 'Applied BGP route optimization across multi-region VPC tunnel' },
+  { id: 'MEM-015', cat: 'intent', text: 'User instructed agent to quarantine compromised API key' },
+  { id: 'MEM-016', cat: 'code', text: 'Eliminated circular dependency between auth middleware and user model' }
 ];
 
 const CAT_COLORS = {
-  security: '#ff2a85',
-  devops: '#00f0ff',
-  database: '#ffb800',
-  intent: '#00ff9d',
-  code: '#b55fe6'
+  security: 'rgba(255, 255, 255, 0.95)',
+  devops: 'rgba(255, 255, 255, 0.75)',
+  database: 'rgba(255, 255, 255, 0.55)',
+  intent: 'rgba(255, 255, 255, 0.38)',
+  code: 'rgba(255, 255, 255, 0.22)'
+};
+
+const CAT_CENTERS = {
+  security: { cx: -220, cy: -130 },
+  devops:   { cx: -180, cy: 140 },
+  database: { cx: 220,  cy: -110 },
+  intent:   { cx: 180,  cy: 130 },
+  code:     { cx: 0,    cy: -30 }
 };
 
 const hnsw = new HNSWIndex();
@@ -828,14 +812,19 @@ function ingest(item) {
   bm25.addDocument(item.id, item.text);
   docRegistry.set(item.id, item);
 
-  // Derive 2D visual projection using first 2 PCA-like harmonics
-  const x = vec[0] * 320 + vec[2] * 180;
-  const y = vec[1] * 280 + vec[3] * 160;
+  // Semantic cluster spatial projection
+  const center = CAT_CENTERS[item.cat] || { cx: 0, cy: 0 };
+  const idx = docRegistry.size;
+  const angle = idx * 2.39996; // Golden angle distribution
+  const dist = 30 + (idx % 4) * 22;
+  const x = center.cx + Math.cos(angle) * dist;
+  const y = center.cy + Math.sin(angle) * dist;
+
   nodeCanvasPositions.set(item.id, {
     x, y,
-    vx: (Math.random() - 0.5) * 0.2,
-    vy: (Math.random() - 0.5) * 0.2,
-    color: CAT_COLORS[item.cat] || '#00f0ff',
+    vx: (Math.random() - 0.5) * 0.15,
+    vy: (Math.random() - 0.5) * 0.15,
+    color: CAT_COLORS[item.cat] || '#ffffff',
     id: item.id,
     pulse: 0
   });
@@ -864,7 +853,7 @@ function draw() {
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
 
-  ctx.fillStyle = '#040608';
+  ctx.fillStyle = '#080806';
   ctx.fillRect(0, 0, w, h);
 
   const cx = w / 2;
@@ -879,7 +868,7 @@ function draw() {
     for (const nId of neighbors) {
       const posB = nodeCanvasPositions.get(nId);
       if (!posB) continue;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.beginPath();
       ctx.moveTo(cx + posA.x, cy + posA.y);
       ctx.lineTo(cx + posB.x, cy + posB.y);
@@ -887,11 +876,11 @@ function draw() {
     }
   }
 
-  // Draw Active Beam Search Trail
+  // Draw Active Beam Search Trail (Clean dashed white path)
   if (activeTrail.length > 0) {
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
-    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.0;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.setLineDash([3, 3]);
     for (let i = 0; i < activeTrail.length; i++) {
       const hop = activeTrail[i];
       const p1 = nodeCanvasPositions.get(hop.from);
@@ -918,28 +907,25 @@ function draw() {
     const screenY = cy + pos.y;
 
     if (isMatch) {
-      pos.pulse += 0.05;
-      const radius = 8 + Math.sin(pos.pulse) * 3;
+      pos.pulse += 0.04;
+      const radius = 6 + Math.sin(pos.pulse) * 2;
       ctx.beginPath();
-      ctx.arc(screenX, screenY, radius + 4, 0, Math.PI * 2);
-      ctx.strokeStyle = pos.color;
-      ctx.lineWidth = 1.5;
+      ctx.arc(screenX, screenY, radius + 3, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 1;
       ctx.stroke();
     }
 
     ctx.beginPath();
-    ctx.arc(screenX, screenY, isMatch ? 5 : 3, 0, Math.PI * 2);
-    ctx.fillStyle = isMatch ? '#fff' : pos.color;
-    ctx.shadowColor = pos.color;
-    ctx.shadowBlur = isMatch ? 16 : 4;
+    ctx.arc(screenX, screenY, isMatch ? 4 : 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = isMatch ? '#ffffff' : pos.color;
     ctx.fill();
-    ctx.shadowBlur = 0;
 
     // Node label
-    if (isMatch || nodeCanvasPositions.size < 20) {
+    if (isMatch || nodeCanvasPositions.size < 25) {
       ctx.font = '9px JetBrains Mono';
-      ctx.fillStyle = isMatch ? '#fff' : 'rgba(255, 255, 255, 0.4)';
-      ctx.fillText(id, screenX + 8, screenY + 3);
+      ctx.fillStyle = isMatch ? '#ffffff' : 'rgba(255, 255, 255, 0.35)';
+      ctx.fillText(id, screenX + 7, screenY + 3);
     }
   }
 
