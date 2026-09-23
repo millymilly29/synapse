@@ -1,0 +1,39 @@
+{
+  "name": "synapse-db",
+  "version": "1.0.0",
+  "description": "Sub-millisecond in-memory vector database, HNSW skip-graph indexer, and hybrid BM25 lexical retriever for autonomous edge AI agents",
+  "main": "engine/index.js",
+  "bin": {
+    "synapse": "./cli.js"
+  },
+  "scripts": {
+    "test": "node tests/synapse.test.js",
+    "demo": "node cli.js demo",
+    "benchmark": "node cli.js benchmark"
+  },
+  "keywords": [
+    "vector-database",
+    "hnsw",
+    "bm25",
+    "hybrid-search",
+    "reciprocal-rank-fusion",
+    "scalar-quantization",
+    "sq8",
+    "ai-agents",
+    "zero-dependency",
+    "edge-ai"
+  ],
+  "author": "Kirill Tsyganov <millyrock2900@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/millymilly29/synapse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/millymilly29/synapse/issues"
+  },
+  "homepage": "https://github.com/millymilly29/synapse#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

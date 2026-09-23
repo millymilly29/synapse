@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYNAPSE // Sub-Millisecond Vector & Hybrid Search Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #040608;
+  --panel: #0a0d12;
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-bright: rgba(0, 240, 255, 0.35);
+  --cyan: #00f0ff;
+  --green: #00ff9d;
+  --pink: #ff2a85;
+  --amber: #ffb800;
+  --purple: #b55fe6;
+  --text: #e6edf3;
+  --text-dim: #7d8590;
+  --f-head: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --f-mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-head);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* TOP STATUS BAR */
+.header-bar {
+  background: #07090d;
+  border-bottom: 1px solid var(--panel-border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.brand-title {
+  font-family: var(--f-mono);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-title span.pulse-dot {
+  width: 8px; height: 8px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--cyan);
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+.badge {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+}
+.badge.cyan { border-color: rgba(0,240,255,0.3); color: var(--cyan); }
+.badge.green { border-color: rgba(0,255,157,0.3); color: var(--green); }
+
+.stat-pills {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.stat-pill {
+  text-align: right;
+  font-family: var(--f-mono);
+}
+.stat-pill .val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cyan);
+  line-height: 1;
+}
+.stat-pill .lbl {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* MAIN LAYOUT */
+.main-stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* LEFT: CANVAS VIEWPORT */
+.canvas-wrapper {
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #080d14 0%, #030507 100%);
+  display: flex;
+  flex-direction: column;
+}
+#spaceCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+.canvas-hud {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  z-index: 5;
+  pointer-events: none;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hud-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  background: rgba(7, 10, 15, 0.85);
+  border: 1px solid var(--panel-border);
+  padding: 6px 12px;
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* RIGHT: CONTROL CONSOLE */
+.console-panel {
+  background: var(--panel);
+  border-left: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 5;
+}
+.console-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--panel-border);
+}
+.section-title {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* SEARCH INPUT */
+.query-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.query-input {
+  flex: 1;
+  background: #05070a;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.query-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,240,255,0.2);
+}
+.btn-query {
+  background: var(--cyan);
+  color: #040608;
+  font-family: var(--f-mono);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 0 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-query:hover { background: #6df7ff; }
+.btn-query:active { transform: scale(0.98); }
+
+/* PRESET PILLS */
+.preset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.preset-chip {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  font-family: var(--f-mono);
+  font-size: 9px;
+  padding: 5px 9px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-chip:hover {
+  border-color: var(--cyan);
+  color: #fff;
+  background: rgba(0,240,255,0.06);
+}
+
+/* SLIDERS & CONTROLS */
+.slider-group {
+  margin-bottom: 16px;
+}
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+.slider-header .val { color: var(--cyan); font-weight: 700; }
+.range-slider {
+  width: 100%;
+  accent-color: var(--cyan);
+  height: 4px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.slider-hint {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.btn-action {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.btn-action:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0,240,255,0.04);
+}
+
+/* RESULTS LIST */
+.results-wrapper {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+.result-card {
+  background: #06090d;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, transform 0.15s;
+  animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.result-card:hover {
+  border-color: rgba(0,240,255,0.4);
+  transform: translateX(2px);
+}
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.card-id {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+.card-confidence {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+}
+.card-text {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 6px;
+}
+.card-meta span b { color: var(--cyan); }
+
+/* FOOTER BAR */
+.footer-bar {
+  background: #05070a;
+  border-top: 1px solid var(--panel-border);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+.footer-bar a { color: var(--cyan); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TOP STATUS BAR -->
+<header class="header-bar">
+  <div class="brand-group">
+    <div class="brand-title">
+      <span class="pulse-dot"></span>
+      SYNAPSE // NEURAL-KV
+    </div>
+    <span class="badge cyan">HNSW Skip-Graph</span>
+    <span class="badge green">BM25 Lexical</span>
+    <span class="badge">SQ8 Quantized (4x)</span>
+    <span class="badge">Zero-Dep Core</span>
+  </div>
+  <div class="stat-pills">
+    <div class="stat-pill">
+      <div class="val" id="telemetryLatency">0.42 ms</div>
+      <div class="lbl">P50 Query Latency</div>
+    </div>
+    <div class="stat-pill">
+      <div class="val" id="telemetryRecords">8 Docs</div>
+      <div class="lbl">Active Vectors</div>
+    </div>
+    <div class="stat-pill">
+      <div class="val" id="telemetryMemory">1.4 KB</div>
+      <div class="lbl">SQ8 Compressed RAM</div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN STAGE -->
+<div class="main-stage">
+
+  <!-- LEFT: 2D/3D EMBEDDING CONSTELLATION -->
+  <div class="canvas-wrapper">
+    <div class="canvas-hud">
+      <div>VIEWPORT // 64D PROJECTION SPACE · HNSW LAYER 0/1 LINKS</div>
+      <div id="hudHops">BEAM SEARCH TRAIL: READY</div>
+    </div>
+    <canvas id="spaceCanvas"></canvas>
+    <div class="hud-legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#ff2a85;"></span> Security</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#00f0ff;"></span> DevOps</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ffb800;"></span> Database</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#00ff9d;"></span> Agent Intent</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#b55fe6;"></span> Code &amp; Ast</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: CONTROL CONSOLE -->
+  <div class="console-panel">
+    
+    <div class="console-section">
+      <div class="section-title">
+        <span>Hybrid Memory Query</span>
+        <span id="queryStopwatch" style="color:var(--green); font-size:10px;">0.00 ms</span>
+      </div>
+
+      <div class="query-box">
+        <input type="text" id="queryInput" class="query-input" placeholder="Query agent memory (e.g. token leak)..." value="credential exfiltration and token leakage">
+        <button id="btnSearch" class="btn-query">SEARCH</button>
+      </div>
+
+      <div class="preset-list">
+        <span class="preset-chip" data-q="credential exfiltration and token leakage">AWS Token Exfil</span>
+        <span class="preset-chip" data-q="docker system prune disk space">Docker Prune</span>
+        <span class="preset-chip" data-q="postgres connection timeout port 5432">Postgres 5432</span>
+        <span class="preset-chip" data-q="refactored React lazy Suspense boundaries">React Suspense</span>
+        <span class="preset-chip" data-q="kubernetes memory pressure OOM killer">K8s Pod OOM</span>
+        <span class="preset-chip" data-q="firewall blocked curl shell injection">Firewall Curl</span>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>HYBRID BALANCE (ALPHA)</span>
+          <span class="val" id="alphaVal">0.65</span>
+        </div>
+        <input type="range" id="alphaSlider" class="range-slider" min="0" max="1" step="0.05" value="0.65">
+        <div class="slider-hint">
+          <span>0.0 (BM25 Exact Lexical)</span>
+          <span>0.5 (Balanced)</span>
+          <span>1.0 (Dense HNSW Vector)</span>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="btnInject" class="btn-action">+ Inject 100 Live Vectors</button>
+        <button id="btnStress" class="btn-action">Run 500-Query Benchmark</button>
+      </div>
+    </div>
+
+    <!-- CONSOLIDATED RECALL RESULTS -->
+    <div class="results-wrapper">
+      <div class="section-title" style="margin-bottom:12px;">
+        <span>Ranked Recall (Top-K Reciprocal Rank Fusion)</span>
+      </div>
+      <div id="resultsList"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER BAR -->
+<footer class="footer-bar">
+  <span>SYNAPSE ENGINE // ZERO-DEPENDENCY VECTOR DB &amp; HNSW GRAPH RETRIEVER</span>
+  <span>DESIGNED FOR AUTONOMOUS AGENT RUNTIMES · <a href="../../projects.html">PORTFOLIO OVERVIEW ↗</a></span>
+</footer>
+
+<!-- EMBEDDED ZERO-DEPENDENCY ENGINE IMPLEMENTATION -->
+<script>
+// --- 1. VECTOR MATH ---
+class VectorMath {
+  static dotProduct(a, b) {
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
+    return sum;
+  }
+  static l2Norm(a) {
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += a[i] * a[i];
+    return Math.sqrt(sum);
+  }
+  static l2Normalize(a, inPlace = false) {
+    const norm = VectorMath.l2Norm(a);
+    const target = inPlace ? a : new Float32Array(a.length);
+    if (norm === 0) return target;
+    const inv = 1 / norm;
+    for (let i = 0; i < a.length; i++) target[i] = a[i] * inv;
+    return target;
+  }
+  static cosineSimilarity(a, b, isNorm = false) {
+    if (isNorm) return VectorMath.dotProduct(a, b);
+    const nA = VectorMath.l2Norm(a);
+    const nB = VectorMath.l2Norm(b);
+    return (nA === 0 || nB === 0) ? 0 : VectorMath.dotProduct(a, b) / (nA * nB);
+  }
+  static embed(text, dim = 64) {
+    const vec = new Float32Array(dim);
+    if (!text) return vec;
+    const normalized = text.toLowerCase().trim();
+    const tokens = normalized.match(/[\p{L}\p{N}_$-]+/gu) || [normalized];
+    for (let t = 0; t < tokens.length; t++) {
+      const tok = tokens[t];
+      let h = 0x811c9dc5;
+      for (let i = 0; i < tok.length; i++) {
+        h ^= tok.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      for (let d = 0; d < dim; d++) {
+        const freq = (d + 1) * 0.137;
+        const phase = (h % 1000) * 0.00628;
+        vec[d] += Math.sin(freq * (t + 1) + phase) + Math.cos(freq * 1.618);
+      }
+      if (tok.length >= 3) {
+        for (let i = 0; i <= tok.length - 3; i++) {
+          const ch = (tok.charCodeAt(i) * 31 + tok.charCodeAt(i + 1)) * 31 + tok.charCodeAt(i + 2);
+          vec[Math.abs(ch) % dim] += 0.45;
+        }
+      }
+    }
+    return VectorMath.l2Normalize(vec, true);
+  }
+}
+
+// --- 2. SCALAR QUANTIZATION (SQ8) ---
+class ScalarQuantizer {
+  static quantize(vec) {
+    const dim = vec.length;
+    let min = Infinity, max = -Infinity;
+    for (let i = 0; i < dim; i++) {
+      if (vec[i] < min) min = vec[i];
+      if (vec[i] > max) max = vec[i];
+    }
+    const range = (max - min) || 1e-7;
+    const inv = 255 / range;
+    const qVec = new Uint8Array(dim);
+    for (let i = 0; i < dim; i++) {
+      qVec[i] = Math.max(0, Math.min(255, Math.round((vec[i] - min) * inv)));
+    }
+    return { qVec, min, range, dim };
+  }
+  static fastCosineSimilarity(floatVec, qTarget) {
+    const { qVec, min, range, dim } = qTarget;
+    const scale = range / 255;
+    let dot = 0, normBsq = 0;
+    for (let i = 0; i < dim; i++) {
+      const vB = min + qVec[i] * scale;
+      dot += floatVec[i] * vB;
+      normBsq += vB * vB;
+    }
+    return normBsq === 0 ? 0 : dot / Math.sqrt(normBsq);
+  }
+}
+
+// --- 3. BM25 LEXICAL ENGINE ---
+class BM25Index {
+  constructor(k1 = 1.2, b = 0.75) {
+    this.k1 = k1;
+    this.b = b;
+    this.inverted = new Map();
+    this.docLengths = new Map();
+    this.totalTokens = 0;
+    this.docCount = 0;
+    this.stopwords = new Set(['a','an','the','is','in','it','of','on','and','or','to','with','for']);
+  }
+  tokenize(text) {
+    if (!text) return [];
+    return (text.toLowerCase().match(/[\p{L}\p{N}_$-]+/gu) || []).filter(t => !this.stopwords.has(t) && t.length > 1);
+  }
+  addDocument(id, text) {
+    const tokens = this.tokenize(text);
+    this.docLengths.set(id, tokens.length);
+    this.totalTokens += tokens.length;
+    this.docCount++;
+    const freqs = new Map();
+    tokens.forEach(t => freqs.set(t, (freqs.get(t) || 0) + 1));
+    for (const [t, f] of freqs.entries()) {
+      if (!this.inverted.has(t)) this.inverted.set(t, new Map());
+      this.inverted.get(t).set(id, f);
+    }
+  }
+  search(query, topK = 10) {
+    const tokens = this.tokenize(query);
+    if (!tokens.length || !this.docCount) return [];
+    const avgdl = this.totalTokens / this.docCount;
+    const scores = new Map();
+    for (const t of tokens) {
+      const post = this.inverted.get(t);
+      if (!post) continue;
+      const idf = Math.log(1 + (this.docCount - post.size + 0.5) / (post.size + 0.5));
+      for (const [id, tf] of post.entries()) {
+        const len = this.docLengths.get(id) || avgdl;
+        const num = tf * (this.k1 + 1);
+        const den = tf + this.k1 * (1 - this.b + this.b * (len / avgdl));
+        scores.set(id, (scores.get(id) || 0) + idf * (num / den));
+      }
+    }
+    const res = [];
+    scores.forEach((score, docId) => res.push({ docId, score }));
+    res.sort((a, b) => b.score - a.score);
+    return res.slice(0, topK);
+  }
+}
+
+// --- 4. HNSW SKIP-GRAPH ---
+class HNSWIndex {
+  constructor(M = 16, efConstruction = 64, efSearch = 32) {
+    this.M = M;
+    this.M0 = 2 * M;
+    this.efConstruction = efConstruction;
+    this.efSearch = efSearch;
+    this.mL = 1 / Math.log(M);
+    this.nodes = new Map();
+    this.enterPointId = null;
+    this.maxLayer = -1;
+  }
+  _dist(qVec, node) {
+    return 1.0 - ScalarQuantizer.fastCosineSimilarity(qVec, node.qVector);
+  }
+  insert(id, vec, meta = {}) {
+    const vector = VectorMath.l2Normalize(vec);
+    const r = Math.random();
+    const targetLayer = r === 0 ? 0 : Math.floor(-Math.log(r) * this.mL);
+    const node = {
+      id,
+      vector,
+      qVector: ScalarQuantizer.quantize(vector),
+      layer: targetLayer,
+      friends: [],
+      meta
+    };
+    for (let l = 0; l <= targetLayer; l++) node.friends[l] = new Set();
+
+    if (this.enterPointId === null) {
+      this.enterPointId = id;
+      this.maxLayer = targetLayer;
+      this.nodes.set(id, node);
+      return;
+    }
+
+    let curr = this.nodes.get(this.enterPointId);
+    let currDist = this._dist(vector, curr);
+
+    for (let l = this.maxLayer; l > targetLayer; l--) {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const nId of (curr.friends[l] || [])) {
+          const n = this.nodes.get(nId);
+          if (!n) continue;
+          const d = this._dist(vector, n);
+          if (d < currDist) {
+            currDist = d;
+            curr = n;
+            changed = true;
+          }
+        }
+      }
+    }
+
+    let enterCandidates = [{ id: curr.id, dist: currDist }];
+    for (let l = Math.min(this.maxLayer, targetLayer); l >= 0; l--) {
+      const candidates = this._searchLayer(vector, enterCandidates, this.efConstruction, l);
+      const maxM = (l === 0) ? this.M0 : this.M;
+      for (const { id: nId } of candidates.slice(0, maxM)) {
+        node.friends[l].add(nId);
+        const nNode = this.nodes.get(nId);
+        if (nNode) {
+          nNode.friends[l].add(id);
+          if (nNode.friends[l].size > maxM) {
+            const list = Array.from(nNode.friends[l]).map(fid => ({
+              id: fid,
+              dist: 1.0 - VectorMath.cosineSimilarity(nNode.vector, this.nodes.get(fid).vector, true)
+            })).sort((a,b) => a.dist - b.dist);
+            nNode.friends[l] = new Set(list.slice(0, maxM).map(x => x.id));
+          }
+        }
+      }
+      enterCandidates = candidates;
+    }
+    if (targetLayer > this.maxLayer) {
+      this.maxLayer = targetLayer;
+      this.enterPointId = id;
+    }
+    this.nodes.set(id, node);
+  }
+
+  _searchLayer(qVec, enterPoints, ef, layer) {
+    const visited = new Set();
+    const candidates = [...enterPoints];
+    const found = [...enterPoints];
+    enterPoints.forEach(p => visited.add(p.id));
+    candidates.sort((a,b) => a.dist - b.dist);
+    found.sort((a,b) => a.dist - b.dist);
+
+    while (candidates.length) {
+      const c = candidates.shift();
+      if (c.dist > found[found.length - 1].dist && found.length >= ef) break;
+      const cNode = this.nodes.get(c.id);
+      if (!cNode) continue;
+      for (const nId of (cNode.friends[layer] || [])) {
+        if (visited.has(nId)) continue;
+        visited.add(nId);
+        const nNode = this.nodes.get(nId);
+        if (!nNode) continue;
+        const d = this._dist(qVec, nNode);
+        if (d < found[found.length - 1].dist || found.length < ef) {
+          candidates.push({ id: nId, dist: d });
+          candidates.sort((a,b) => a.dist - b.dist);
+          found.push({ id: nId, dist: d });
+          found.sort((a,b) => a.dist - b.dist);
+          if (found.length > ef) found.pop();
+        }
+      }
+    }
+    return found;
+  }
+
+  searchWithTrail(qVec, topK = 5) {
+    const trail = [];
+    if (!this.nodes.size || this.enterPointId === null) return { results: [], trail };
+    let curr = this.nodes.get(this.enterPointId);
+    let currDist = this._dist(qVec, curr);
+
+    for (let l = this.maxLayer; l > 0; l--) {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const nId of (curr.friends[l] || [])) {
+          const n = this.nodes.get(nId);
+          if (!n) continue;
+          const d = this._dist(qVec, n);
+          if (d < currDist) {
+            trail.push({ layer: l, from: curr.id, to: nId, dist: d });
+            currDist = d;
+            curr = n;
+            changed = true;
+          }
+        }
+      }
+    }
+    const candidates = this._searchLayer(qVec, [{ id: curr.id, dist: currDist }], Math.max(this.efSearch, topK), 0);
+    const results = candidates.slice(0, topK).map(c => ({
+      id: c.id,
+      similarity: Math.max(0, Math.min(1.0, 1.0 - c.dist))
+    }));
+    return { results, trail };
+  }
+}
+
+// --- 5. HYBRID RECIPROCAL RANK FUSION ---
+class HybridRetriever {
+  static fuse(dense, sparse, alpha = 0.65, k = 60, topK = 6) {
+    const merged = new Map();
+    dense.forEach((item, idx) => {
+      merged.set(item.id, {
+        id: item.id,
+        score: alpha * (1 / (k + idx + 1)),
+        vectorSim: item.similarity,
+        bm25Score: 0
+      });
+    });
+    sparse.forEach((item, idx) => {
+      const id = item.docId;
+      const add = (1 - alpha) * (1 / (k + idx + 1));
+      if (merged.has(id)) {
+        const e = merged.get(id);
+        e.score += add;
+        e.bm25Score = item.score;
+      } else {
+        merged.set(id, { id, score: add, vectorSim: 0, bm25Score: item.score });
+      }
+    });
+    const list = Array.from(merged.values()).sort((a,b) => b.score - a.score);
+    const maxPoss = (alpha * (1 / (k + 1))) + ((1 - alpha) * (1 / (k + 1)));
+    list.forEach(item => item.confidence = Math.min(1.0, item.score / maxPoss));
+    return list.slice(0, topK);
+  }
+}
+
+// --- INITIALIZE STUDIO DATA & CANVAS ---
+const SEED_DATA = [
+  { id: 'MEM-001', cat: 'security', text: 'Agent intercepted suspicious AWS IAM token leak in environment dump' },
+  { id: 'MEM-002', cat: 'devops', text: 'Executed docker system prune -a to reclaim 18.4GB disk space' },
+  { id: 'MEM-003', cat: 'intent', text: 'User requested financial revenue export for Q3 2026 in CSV format' },
+  { id: 'MEM-004', cat: 'database', text: 'PostgreSQL connection timeout on port 5432 after 3000ms idle' },
+  { id: 'MEM-005', cat: 'security', text: 'Firewall blocked curl payload piped to /bin/bash from untrusted host' },
+  { id: 'MEM-006', cat: 'code', text: 'Refactored React tree into lazy dynamic Suspense boundaries' },
+  { id: 'MEM-007', cat: 'security', text: 'JWT authentication token expired for session uuid-4982a-bc01' },
+  { id: 'MEM-008', cat: 'devops', text: 'Kubernetes node memory pressure triggered OOM killer on worker-04' }
+];
+
+const CAT_COLORS = {
+  security: '#ff2a85',
+  devops: '#00f0ff',
+  database: '#ffb800',
+  intent: '#00ff9d',
+  code: '#b55fe6'
+};
+
+const hnsw = new HNSWIndex();
+const bm25 = new BM25Index();
+const docRegistry = new Map();
+const nodeCanvasPositions = new Map();
+
+function ingest(item) {
+  const vec = VectorMath.embed(item.text, 64);
+  hnsw.insert(item.id, vec, { cat: item.cat });
+  bm25.addDocument(item.id, item.text);
+  docRegistry.set(item.id, item);
+
+  // Derive 2D visual projection using first 2 PCA-like harmonics
+  const x = vec[0] * 320 + vec[2] * 180;
+  const y = vec[1] * 280 + vec[3] * 160;
+  nodeCanvasPositions.set(item.id, {
+    x, y,
+    vx: (Math.random() - 0.5) * 0.2,
+    vy: (Math.random() - 0.5) * 0.2,
+    color: CAT_COLORS[item.cat] || '#00f0ff',
+    id: item.id,
+    pulse: 0
+  });
+}
+
+SEED_DATA.forEach(ingest);
+
+// --- CANVAS VISUALIZER ---
+const canvas = document.getElementById('spaceCanvas');
+const ctx = canvas.getContext('2d');
+let activeTrail = [];
+let trailProgress = 0;
+let lastMatchingIds = new Set();
+
+function resizeCanvas() {
+  canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+  canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function draw() {
+  requestAnimationFrame(draw);
+  ctx.save();
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const w = canvas.width / window.devicePixelRatio;
+  const h = canvas.height / window.devicePixelRatio;
+
+  ctx.fillStyle = '#040608';
+  ctx.fillRect(0, 0, w, h);
+
+  const cx = w / 2;
+  const cy = h / 2;
+
+  // Draw background graph edges (Layer 0 neighbors)
+  ctx.lineWidth = 0.5;
+  for (const [id, node] of hnsw.nodes.entries()) {
+    const posA = nodeCanvasPositions.get(id);
+    if (!posA) continue;
+    const neighbors = node.friends[0] || [];
+    for (const nId of neighbors) {
+      const posB = nodeCanvasPositions.get(nId);
+      if (!posB) continue;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.beginPath();
+      ctx.moveTo(cx + posA.x, cy + posA.y);
+      ctx.lineTo(cx + posB.x, cy + posB.y);
+      ctx.stroke();
+    }
+  }
+
+  // Draw Active Beam Search Trail
+  if (activeTrail.length > 0) {
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
+    ctx.setLineDash([4, 4]);
+    for (let i = 0; i < activeTrail.length; i++) {
+      const hop = activeTrail[i];
+      const p1 = nodeCanvasPositions.get(hop.from);
+      const p2 = nodeCanvasPositions.get(hop.to);
+      if (p1 && p2) {
+        ctx.beginPath();
+        ctx.moveTo(cx + p1.x, cy + p1.y);
+        ctx.lineTo(cx + p2.x, cy + p2.y);
+        ctx.stroke();
+      }
+    }
+    ctx.setLineDash([]);
+  }
+
+  // Draw Nodes
+  for (const [id, pos] of nodeCanvasPositions.entries()) {
+    pos.x += pos.vx;
+    pos.y += pos.vy;
+    if (Math.abs(pos.x) > w * 0.45) pos.vx *= -1;
+    if (Math.abs(pos.y) > h * 0.45) pos.vy *= -1;
+
+    const isMatch = lastMatchingIds.has(id);
+    const screenX = cx + pos.x;
+    const screenY = cy + pos.y;
+
+    if (isMatch) {
+      pos.pulse += 0.05;
+      const radius = 8 + Math.sin(pos.pulse) * 3;
+      ctx.beginPath();
+      ctx.arc(screenX, screenY, radius + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = pos.color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, isMatch ? 5 : 3, 0, Math.PI * 2);
+    ctx.fillStyle = isMatch ? '#fff' : pos.color;
+    ctx.shadowColor = pos.color;
+    ctx.shadowBlur = isMatch ? 16 : 4;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Node label
+    if (isMatch || nodeCanvasPositions.size < 20) {
+      ctx.font = '9px JetBrains Mono';
+      ctx.fillStyle = isMatch ? '#fff' : 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText(id, screenX + 8, screenY + 3);
+    }
+  }
+
+  ctx.restore();
+}
+draw();
+
+// --- SEARCH & RECALL DISPATCHER ---
+function executeQuery() {
+  const query = document.getElementById('queryInput').value.trim();
+  if (!query) return;
+
+  const alpha = parseFloat(document.getElementById('alphaSlider').value);
+  const t0 = performance.now();
+
+  const qVec = VectorMath.embed(query, 64);
+  const { results: denseResults, trail } = hnsw.searchWithTrail(qVec, 8);
+  const sparseResults = bm25.search(query, 8);
+  const fused = HybridRetriever.fuse(denseResults, sparseResults, alpha, 60, 5);
+
+  const elapsed = (performance.now() - t0).toFixed(3);
+
+  document.getElementById('queryStopwatch').textContent = `${elapsed} ms`;
+  document.getElementById('telemetryLatency').textContent = `${elapsed} ms`;
+
+  activeTrail = trail;
+  document.getElementById('hudHops').textContent = `BEAM SEARCH TRAIL: ${trail.length} HOPS ACROSS ${hnsw.maxLayer + 1} HNSW LAYERS`;
+
+  lastMatchingIds.clear();
+  fused.forEach(f => lastMatchingIds.add(f.id));
+
+  // Render Result Cards
+  const container = document.getElementById('resultsList');
+  container.innerHTML = '';
+
+  if (fused.length === 0) {
+    container.innerHTML = '<div style="font-family:var(--f-mono); font-size:11px; color:var(--text-dim);">No matching memories found.</div>';
+    return;
+  }
+
+  fused.forEach((res, idx) => {
+    const doc = docRegistry.get(res.id) || { text: 'Synthesized memory record' };
+    const confPct = (res.confidence * 100).toFixed(1);
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="card-id">#${idx + 1} · ${res.id}</span>
+        <span class="card-confidence">${confPct}% MATCH</span>
+      </div>
+      <div class="card-text">${doc.text}</div>
+      <div class="card-meta">
+        <span>SIM: <b>${res.vectorSim.toFixed(3)}</b></span>
+        <span>BM25: <b>${res.bm25Score.toFixed(2)}</b></span>
+        <span>RRF: <b>${res.score.toFixed(4)}</b></span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  updateTelemetry();
+}
+
+function updateTelemetry() {
+  const count = docRegistry.size;
+  document.getElementById('telemetryRecords').textContent = `${count} Docs`;
+  const memoryKb = ((count * (64 + 8)) / 1024).toFixed(1);
+  document.getElementById('telemetryMemory').textContent = `${memoryKb} KB`;
+}
+
+// --- EVENT LISTENERS ---
+document.getElementById('btnSearch').addEventListener('click', executeQuery);
+document.getElementById('queryInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') executeQuery();
+});
+
+document.getElementById('alphaSlider').addEventListener('input', e => {
+  document.getElementById('alphaVal').textContent = parseFloat(e.target.value).toFixed(2);
+  executeQuery();
+});
+
+document.querySelectorAll('.preset-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.getElementById('queryInput').value = chip.dataset.q;
+    executeQuery();
+  });
+});
+
+document.getElementById('btnInject').addEventListener('click', () => {
+  const categories = ['security', 'devops', 'database', 'intent', 'code'];
+  const verbs = ['Intercepted', 'Reclaimed', 'Dispatched', 'Optimized', 'Isolated'];
+  const targets = ['Redis cluster', 'AWS secret', 'Docker node', 'Postgres pool', 'Kernel sandbox'];
+  const startId = docRegistry.size + 1;
+
+  for (let i = 0; i < 100; i++) {
+    const id = `MEM-${String(startId + i).padStart(3, '0')}`;
+    const cat = categories[Math.floor(Math.random() * categories.length)];
+    const text = `${verbs[i % verbs.length]} ${targets[i % targets.length]} in cluster region #${(i % 5) + 1} via autonomous task`;
+    ingest({ id, cat, text });
+  }
+
+  updateTelemetry();
+  executeQuery();
+});
+
+document.getElementById('btnStress').addEventListener('click', () => {
+  const start = performance.now();
+  const iterations = 500;
+  for (let i = 0; i < iterations; i++) {
+    const qVec = VectorMath.embed(`stress test query #${i}`, 64);
+    hnsw.searchWithTrail(qVec, 3);
+  }
+  const avg = ((performance.now() - start) / iterations).toFixed(3);
+  alert(`500 consecutive vector searches completed!\nAverage Latency: ${avg} ms per query (${Math.round(1000/avg)} QPS)`);
+});
+
+// Run initial query on load
+executeQuery();
+</script>
+
+</body>
+</html>
