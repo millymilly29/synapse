@@ -28,12 +28,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/millymilly29/synapse.git"
+    "url": "git+https://github.com/therealfullmetal55555/synapse.git"
   },
   "bugs": {
-    "url": "https://github.com/millymilly29/synapse/issues"
+    "url": "https://github.com/therealfullmetal55555/synapse/issues"
   },
-  "homepage": "https://github.com/millymilly29/synapse#readme",
+  "homepage": "https://github.com/therealfullmetal55555/synapse#readme",
   "engines": {
     "node": ">=18.0.0"
   }

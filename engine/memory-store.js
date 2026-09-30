@@ -204,8 +204,29 @@ class EpisodicMemoryStore {
       workingMemorySize: this.workingMemory.length
     };
   }
+
+  /**
+   * Alias for remember() to support standard vector DB nomenclature.
+   */
+  insert(memory) {
+    return this.remember(memory);
+  }
+
+  /**
+   * Alias for recall() supporting both string queries and query options objects.
+   */
+  hybridSearch(queryOrOptions, maybeOptions = {}) {
+    if (typeof queryOrOptions === 'string') {
+      return this.recall(queryOrOptions, maybeOptions);
+    }
+    const query = (queryOrOptions && queryOrOptions.text) ? queryOrOptions.text : '';
+    const opts = { ...queryOrOptions, ...maybeOptions };
+    return this.recall(query, opts);
+  }
 }
 
+const SynapseStore = EpisodicMemoryStore;
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { EpisodicMemoryStore };
+  module.exports = { EpisodicMemoryStore, SynapseStore };
 }

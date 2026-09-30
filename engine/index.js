@@ -7,7 +7,7 @@ const { ScalarQuantizer } = require('./quantizer');
 const { BM25Index } = require('./bm25');
 const { HNSWIndex } = require('./hnsw-index');
 const { HybridRetriever } = require('./hybrid-search');
-const { EpisodicMemoryStore } = require('./memory-store');
+const { EpisodicMemoryStore, SynapseStore } = require('./memory-store');
 
 module.exports = {
   VectorMath,
@@ -15,5 +15,6 @@ module.exports = {
   BM25Index,
   HNSWIndex,
   HybridRetriever,
-  EpisodicMemoryStore
+  EpisodicMemoryStore,
+  SynapseStore
 };

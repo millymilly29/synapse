@@ -12,7 +12,7 @@ Sub-millisecond in-memory vector database with HNSW skip-graph indexer, hybrid B
 
 ```
 [ SPECIFICATION TAGS ]
-[ TESTS — 17/17 VERIFIED ]   [ LICENSE — MIT ]   [ DEPENDENCIES — 0 ]   [ RECALL@10 — 99.1% ]   [ LATENCY — 0.245ms P50 ]
+[ TESTS — 17/17 VERIFIED ]   [ LICENSE — MIT ]   [ DEPENDENCIES — 0 ]   [ RUNTIME — IN-PROCESS NODE/BROWSER ]
 ```
 
 ---
@@ -20,39 +20,35 @@ Sub-millisecond in-memory vector database with HNSW skip-graph indexer, hybrid B
 ### [ 02.1 ] QUICKSTART
 
 ```bash
-git clone https://github.com/millymilly29/synapse.git
+git clone https://github.com/therealfullmetal55555/synapse.git
 cd synapse
-node tests/audit-benchmark.js
+node tests/synapse.test.js && node tests/audit-benchmark.js
 ```
 
 ```javascript
-const { SynapseStore } = require('./engine/memory-store');
+const { EpisodicMemoryStore } = require('./engine');
+const store = new EpisodicMemoryStore({ dimension: 64 });
 
-// 1. Initialize in-memory vector store
-const store = new SynapseStore({
-  dim: 128,
-  M: 16,              // Max bi-directional links
-  efConstruction: 64, // Build beam depth
-  efSearch: 32,       // Search beam depth
-  quantize: 'sq8'     // 4x RAM reduction
-});
-
-// 2. Insert memories with dense vectors & sparse text
-store.insert({
-  id: 'mem_01',
-  vector: Float32Array.from(embedding),
+// 1. Store memories with dense vectors (or auto-embedded text) and metadata
+store.remember({ 
+  id: 'mem_01', 
   text: 'Postgres connection pool exhausted on port 5432',
-  metadata: { service: 'auth-worker' }
+  metadata: { service: 'auth-worker' } 
 });
 
-// 3. Sub-millisecond hybrid retrieval (RRF)
-const results = store.hybridSearch({
-  vector: Float32Array.from(queryEmbedding),
-  text: '5432 database timeout',
-  topK: 5,
-  alpha: 0.65 // 0.0 = pure BM25, 1.0 = pure vector
+store.remember({ 
+  id: 'mem_02', 
+  text: 'Redis eviction policy changed to allkeys-lru',
+  metadata: { service: 'cache' } 
 });
+
+// 2. Sub-millisecond hybrid retrieval (Dense HNSW + Sparse BM25 via RRF)
+const results = store.recall('5432 database timeout', { topK: 2 });
+console.log(results.map(r => ({ id: r.id, confidence: r.confidence })));
+// [ { id: 'mem_01', confidence: 0.99 }, { id: 'mem_02', confidence: 0.65 } ]
 ```
+
+> **Note on Embeddings:** The default zero-dependency fallback generates deterministic character n-gram projections (`VectorMath.embed`). For production semantic retrieval, supply pre-computed vectors from your embedding provider (OpenAI `text-embedding-3`, Cohere, Gemini, local Ollama) via the `vector: Float32Array` property.
 
 ---
 
@@ -73,10 +69,15 @@ const results = store.hybridSearch({
   Dim 128 : Mean Sim: 0.999993 | Distortion: 0.0007% | RAM: -75.0%
   Dim 768 : Mean Sim: 0.999992 | Distortion: 0.0008% | RAM: -75.0%
 
---- 2. HNSW RECALL@10 & LATENCY (Ground Truth: Brute-Force) ---
-  N=500   | Dim=64 | Recall@10: 99.1% | P50: 0.245ms | P99: 0.509ms | Build: 1,943 v/s
-  N=1000  | Dim=64 | Recall@10: 97.0% | P50: 0.312ms | P99: 1.141ms | Build: 1,645 v/s
-  N=5000  | Dim=64 | Recall@10: 80.6% | P50: 0.467ms | P99: 0.804ms | Build: 911 v/s
+--- 2. HNSW RECALL@10 vs LATENCY (Random 64-d vectors, Brute-Force Ground Truth) ---
+  N=500   | efSearch=32  | Recall@10: 98.5% | P50: 0.301ms
+  N=500   | efSearch=64  | Recall@10: 99.3% | P50: 0.572ms
+  N=1000  | efSearch=32  | Recall@10: 97.0% | P50: 0.426ms
+  N=1000  | efSearch=64  | Recall@10: 99.5% | P50: 0.848ms
+  N=5000  | efSearch=32  | Recall@10: 78.8% | P50: 0.903ms
+  N=5000  | efSearch=64  | Recall@10: 93.5% | P50: 1.824ms
+  N=5000  | efSearch=128 | Recall@10: 98.0% | P50: 4.455ms
+  N=5000  | efSearch=256 | Recall@10: 99.3% | P50: 10.51ms
 ```
 
 ---
@@ -86,15 +87,15 @@ const results = store.hybridSearch({
 ```
 [ MEMORY MODEL ]      Volatile V8 heap memory. Zero serialization penalty during queries.
 [ QUANTIZATION ]      SQ8 linear scalar quantization (Float32 -> Int8, [-128, 127]).
-[ DUAL-TRACK SEARCH ] Dense Cosine HNSW + Sparse Okapi BM25 (k1=1.5, b=0.75).
-[ LIMITATION 01 ]     Designed for single-process agent runtimes (N <= 50,000 vectors).
-[ LIMITATION 02 ]     Single-threaded V8 execution.
+[ DUAL-TRACK SEARCH ] Dense Cosine HNSW + Sparse Okapi BM25 (k1=1.2, b=0.75).
+[ LIMITATION 01 ]     Optimized for single-process agent session memory (N <= 10,000 vectors).
+[ LIMITATION 02 ]     Single-threaded V8 execution model.
 ```
 
 ---
 
 ```
 GARMENT CARE / LICENSE
-ORIGIN        KIRILL TSYGANOV [ https://millymilly29.github.io ]
+ORIGIN        KIRILL TSYGANOV [ https://therealfullmetal55555.github.io ]
 LICENSE       MIT · 100% UNBLEACHED CODE
 ```
