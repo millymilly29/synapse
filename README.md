@@ -78,7 +78,12 @@ console.log(results.map(r => ({ id: r.id, confidence: r.confidence })));
   N=5000  | efSearch=64  | Recall@10: 93.5% | P50: 1.824ms
   N=5000  | efSearch=128 | Recall@10: 98.0% | P50: 4.455ms
   N=5000  | efSearch=256 | Recall@10: 99.3% | P50: 10.51ms
+  N=10000 | efSearch=32  | Recall@10: 71.1% | P50: 0.593ms
+  N=10000 | efSearch=128 | Recall@10: 88.4% | P50: 1.390ms
+  N=10000 | efSearch=256 | Recall@10: 93.1% | P50: 4.820ms
 ```
+
+> **Recall Guidance:** For $N \ge 10{,}000$, configure `efSearch >= 128` to maintain $>88\text{–}93\%$ recall.
 
 ---
 
